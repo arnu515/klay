@@ -105,6 +105,7 @@ import { ref } from 'vue'
 import v from 'validator'
 import appwrite from '../lib/appwrite'
 import { useQuasar } from 'quasar'
+import { loadUser } from 'src/stores/user'
 
 const mode = ref<'login' | 'signup'>('login')
 const isPasswordShown = ref(false)
@@ -135,7 +136,7 @@ async function submit() {
 		} else {
 			await appwrite.account.createSession(email.value.trim(), pw.value.trim())
 		}
-		console.log(await appwrite.account.get())
+		await loadUser()
 	} catch (e) {
 		err((e as any).message)
 	}
