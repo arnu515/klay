@@ -17,9 +17,15 @@
 
 		<q-drawer v-model="leftDrawerOpen" show-if-above bordered>
 			<q-list>
-				<q-item-label header> Essential Links </q-item-label>
+				<q-item-label header> Contacts </q-item-label>
 
-				<EssentialLink v-for="link in essentialLinks" :key="link.title" v-bind="link" />
+				<ContactsItem
+					v-for="contact in contacts"
+					v-bind:key="contact.id"
+					:name="contact.name"
+					:avatar="contact.avatar"
+					:lastMessage="contact.lastMessage"
+				/>
 			</q-list>
 		</q-drawer>
 
@@ -35,18 +41,36 @@
 
 <script lang="ts">
 import { defineComponent, ref } from 'vue'
-import EssentialLink from 'components/EssentialLink.vue'
+import ContactsItem from 'src/components/ContactsItem.vue'
 // this is a vetur problem
 import AuthPage from 'pages/AuthPage.vue'
 import user, { loadUser } from '../stores/user'
 import { useStore } from '@nanostores/vue'
 
-const linksList = [
+const contacts = [
 	{
-		title: 'Docs',
-		caption: 'quasar.dev',
-		icon: 'school',
-		link: 'https://quasar.dev'
+		id: 1,
+		name: 'A contact',
+		lastMessage: 'You: Test',
+		avatar: 'https://picsum.photos/64'
+	},
+	{
+		id: 2,
+		name: 'Another contact',
+		lastMessage: 'Another contact: Hi',
+		avatar: 'https://picsum.photos/64'
+	},
+	{
+		id: 3,
+		name: 'One more contact',
+		lastMessage: 'You: Ok',
+		avatar: 'https://picsum.photos/64'
+	},
+	{
+		id: 4,
+		name: 'Last contact',
+		lastMessage: 'You: Hello',
+		avatar: 'https://picsum.photos/64'
 	}
 ]
 
@@ -54,7 +78,7 @@ export default defineComponent({
 	name: 'MainLayout',
 
 	components: {
-		EssentialLink,
+		ContactsItem,
 		AuthPage
 	},
 
@@ -64,7 +88,7 @@ export default defineComponent({
 		const loading = ref(true)
 
 		return {
-			essentialLinks: linksList,
+			contacts,
 			leftDrawerOpen,
 			u,
 			toggleLeftDrawer() {
