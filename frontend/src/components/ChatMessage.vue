@@ -21,7 +21,7 @@ import { defineProps } from 'vue'
 
 const props = defineProps({
 	sent: Boolean,
-	text: [String],
+	text: Array,
 	name: String,
 	hint: String,
 	avatar: String
