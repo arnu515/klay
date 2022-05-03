@@ -6,14 +6,15 @@
 	"author": "arnu515 <52203828+arnu515@users.noreply.github.com>",
 	"private": true,
 	"scripts": {
-		"lint": "eslint --ext .js,.ts,.vue ./",
-		"format": "prettier --write \"**/*.{js,ts,vue,scss,html,md,json}\" --ignore-path .gitignore",
-		"test": "echo \"No test specified\" && exit 0"
+		"build": "quasar build",
+		"dev": "quasar dev",
+		"format": "prettier --write ."
 	},
 	"dependencies": {
 		"@nanostores/vue": "^0.5.5",
 		"@quasar/extras": "^1.0.0",
 		"appwrite": "^7.0.0",
+		"axios": "^0.27.2",
 		"core-js": "^3.6.5",
 		"dotenv": "^16.0.0",
 		"nanostores": "^0.5.12",
@@ -48,10 +49,5 @@
 		"node": ">= 12.22.1",
 		"npm": ">= 6.13.4",
 		"yarn": ">= 1.21.1"
-	},
-	"scripts": {
-		"build": "quasar build",
-		"dev": "quasar dev",
-		"format": "prettier --write ."
 	}
 }
