@@ -64,6 +64,8 @@
 						color="primary"
 						:label="mode === 'login' ? 'Log In' : 'Create account'"
 						size="lg"
+						:loading="loading"
+						:disable="loading"
 					/>
 					<q-btn
 						@click="mode = mode === 'signup' ? 'login' : 'signup'"
@@ -71,6 +73,7 @@
 						flat
 						color="primary"
 						:label="mode === 'login' ? 'Create an account' : 'Log In Instead'"
+						:disable="loading"
 					/>
 				</div>
 			</q-form>
@@ -109,6 +112,7 @@ import { loadUser } from 'src/stores/user'
 
 const mode = ref<'login' | 'signup'>('login')
 const isPasswordShown = ref(false)
+const loading = ref(false)
 const q = useQuasar()
 
 const email = ref(''),
@@ -125,6 +129,7 @@ function err(msg: string) {
 
 async function submit() {
 	try {
+		loading.value = true
 		if (mode.value === 'signup') {
 			await appwrite.account.create(
 				'unique()',
@@ -137,7 +142,9 @@ async function submit() {
 			await appwrite.account.createSession(email.value.trim(), pw.value.trim())
 		}
 		await loadUser()
+		loading.value = false
 	} catch (e) {
+		loading.value = false
 		err((e as any).message)
 	}
 }
