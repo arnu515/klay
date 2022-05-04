@@ -7,7 +7,7 @@
 	"private": true,
 	"scripts": {
 		"build": "quasar build",
-		"dev": "quasar dev",
+		"dev": "quasar dev --port 3000",
 		"format": "prettier --write ."
 	},
 	"dependencies": {
