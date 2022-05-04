@@ -1,86 +1,44 @@
 {
-    "projectId": "klay",
-    "projectName": "Klay",
-    "collections": [
+  "projectId": "klay",
+  "projectName": "Klay",
+  "collections": [
+    {
+      "$id": "profiles",
+      "$read": ["role:all"],
+      "$write": [],
+      "name": "Profiles",
+      "enabled": true,
+      "permission": "collection",
+      "attributes": [
         {
-            "$id": "users",
-            "$read": [
-                "role:all"
-            ],
-            "$write": [],
-            "name": "Users",
-            "enabled": true,
-            "permission": "collection",
-            "attributes": [
-                {
-                    "key": "avatar_url",
-                    "type": "string",
-                    "status": "stuck",
-                    "required": true,
-                    "array": false,
-                    "size": 255,
-                    "default": null
-                },
-                {
-                    "key": "status",
-                    "type": "string",
-                    "status": "stuck",
-                    "required": false,
-                    "array": false,
-                    "size": 1048,
-                    "default": "I'm using Klay to communicate!"
-                },
-                {
-                    "key": "bio",
-                    "type": "string",
-                    "status": "stuck",
-                    "required": false,
-                    "array": false,
-                    "size": 2048,
-                    "default": null
-                }
-            ],
-            "indexes": []
+          "key": "avatar_url",
+          "type": "string",
+          "status": "available",
+          "required": true,
+          "array": false,
+          "size": 2048,
+          "default": null
         },
         {
-            "$id": "profiles",
-            "$read": [
-                "role:all"
-            ],
-            "$write": [],
-            "name": "Profiles",
-            "enabled": true,
-            "permission": "collection",
-            "attributes": [
-                {
-                    "key": "avatar_url",
-                    "type": "string",
-                    "status": "available",
-                    "required": true,
-                    "array": false,
-                    "size": 2048,
-                    "default": null
-                },
-                {
-                    "key": "status",
-                    "type": "string",
-                    "status": "available",
-                    "required": true,
-                    "array": false,
-                    "size": 512,
-                    "default": null
-                },
-                {
-                    "key": "bio",
-                    "type": "string",
-                    "status": "available",
-                    "required": false,
-                    "array": false,
-                    "size": 2048,
-                    "default": null
-                }
-            ],
-            "indexes": []
+          "key": "status",
+          "type": "string",
+          "status": "available",
+          "required": true,
+          "array": false,
+          "size": 512,
+          "default": null
+        },
+        {
+          "key": "bio",
+          "type": "string",
+          "status": "available",
+          "required": false,
+          "array": false,
+          "size": 2048,
+          "default": null
         }
-    ]
+      ],
+      "indexes": []
+    }
+  ]
 }
