@@ -182,7 +182,7 @@ async function changeAbout() {
 		})
 	}
 
-	loading.value.name = false
+	loading.value.about = false
 }
 
 async function changeAvatar() {
