@@ -25,10 +25,21 @@
 
 				<q-btn
 					flat
+					v-if="u"
+					dense
+					round
+					icon="people"
+					aria-label="Contacts"
+					title="Contacts"
+					@click="$router.push('/contacts')"
+				/>
+				<q-btn
+					flat
 					dense
 					round
 					icon="settings"
 					aria-label="Settings"
+					title="Settings"
 					@click="$router.push('/settings')"
 				/>
 			</q-toolbar>
