@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Klay</string>
+    <string name="title_activity_main">Klay</string>
+    <string name="package_name">gq.arnu515.klay</string>
+    <string name="custom_url_scheme">gq.arnu515.klay</string>
+</resources>

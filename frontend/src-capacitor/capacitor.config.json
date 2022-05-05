@@ -1,0 +1,8 @@
+{
+  "appId": "gq.arnu515.klay",
+  "appName": "Klay",
+  "bundledWebRuntime": false,
+  "npmClient": "yarn",
+  "webDir": "www",
+  "linuxAndroidStudioPath": "/opt/android-studio/bin/studio.sh"
+}

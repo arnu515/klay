@@ -1,0 +1,12 @@
+{
+  "name": "frontend",
+  "version": "0.0.1",
+  "description": "End-to-end Encrypted Chat App",
+  "author": "arnu515 <52203828+arnu515@users.noreply.github.com>",
+  "private": true,
+  "dependencies": {
+    "@capacitor/android": "2.5.0",
+    "@capacitor/cli": "^2.0.0",
+    "@capacitor/core": "^2.0.0"
+  }
+}
