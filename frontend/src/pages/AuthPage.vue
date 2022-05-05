@@ -137,7 +137,13 @@ async function submit() {
 				pw.value.trim(),
 				name.value.trim()
 			)
-			await appwrite.account.createSession(email.value.trim(), pw.value.trim())
+			email.value = ''
+			pw.value = ''
+			name.value = ''
+			q.dialog({
+				title: 'Success',
+				message: 'Account created. Please log in'
+			})
 		} else {
 			await appwrite.account.createSession(email.value.trim(), pw.value.trim())
 		}
