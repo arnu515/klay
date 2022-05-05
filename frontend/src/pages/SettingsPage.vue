@@ -11,12 +11,22 @@
 			</q-item-section>
 			<q-item-section>{{ item.name }}</q-item-section>
 		</q-item>
+		<q-item clickable @click="logout" style="color: red">
+			<q-item-section avatar>
+				<q-icon name="logout" />
+			</q-item-section>
+			<q-item-section>Logout</q-item-section>
+		</q-item>
 	</q-list>
 </template>
 
 <script lang="ts" setup>
+import { Dialog } from 'quasar'
 import toolbarTitle from 'src/stores/toolbarTitle'
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 toolbarTitle.set('Settings')
 
@@ -37,4 +47,22 @@ const settings = ref([
 		path: 'privacy'
 	}
 ])
+
+function logout() {
+	const d = Dialog.create({
+		title: 'Are you sure?',
+		message: 'Are you sure you want to logout?',
+		focus: 'cancel',
+		ok: {
+			label: 'Ok',
+			textColor: 'negative',
+			flat: true
+		},
+		cancel: {
+			label: 'Cancel',
+			flat: true
+		}
+	})
+	d.onOk(() => router.push('/settings/logout'))
+}
 </script>

@@ -15,7 +15,11 @@ const routes: RouteRecordRaw[] = [
 						path: 'profile',
 						component: () => import('pages/settings/ProfilePage.vue')
 					},
-					{ path: 'account', component: () => import('pages/settings/AccountPage.vue') }
+					{
+						path: 'account',
+						component: () => import('pages/settings/AccountPage.vue')
+					},
+					{ path: 'logout', component: () => import('pages/settings/LogoutPage.vue') }
 				]
 			}
 		]
