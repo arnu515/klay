@@ -21,7 +21,7 @@
 					@click="$router.back()"
 				/>
 
-				<q-toolbar-title> Klay </q-toolbar-title>
+				<q-toolbar-title> {{ title }} </q-toolbar-title>
 
 				<q-btn
 					flat
@@ -64,6 +64,7 @@ import ContactsItem from 'src/components/ContactsItem.vue'
 // this is a vetur problem
 import AuthPage from 'pages/AuthPage.vue'
 import user, { loadUser } from '../stores/user'
+import toolbarTitle from '../stores/toolbarTitle'
 import { useStore } from '@nanostores/vue'
 import { useRoute } from 'vue-router'
 
@@ -107,12 +108,14 @@ export default defineComponent({
 		const u = useStore(user)
 		const loading = ref(true)
 		const path = computed(() => useRoute().path)
+		const title = useStore(toolbarTitle)
 
 		return {
 			contacts,
 			leftDrawerOpen,
 			u,
 			path,
+			title,
 			toggleLeftDrawer() {
 				leftDrawerOpen.value = !leftDrawerOpen.value
 			},

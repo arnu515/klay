@@ -137,6 +137,7 @@ main {
 <script lang="ts">
 import { defineComponent, ref } from 'vue'
 import ChatMessage from 'components/ChatMessage.vue'
+import toolbarTitle from 'src/stores/toolbarTitle'
 
 export default defineComponent({
 	name: 'IndexPage',
@@ -216,6 +217,7 @@ export default defineComponent({
 			// scroll to bottom
 			messages.scrollTop = messages.scrollHeight
 		}
+		toolbarTitle.set('Chat')
 	}
 })
 </script>
