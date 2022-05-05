@@ -3,6 +3,7 @@
 		<q-header elevated>
 			<q-toolbar>
 				<q-btn
+					v-if="path === '/'"
 					flat
 					dense
 					round
@@ -10,8 +11,26 @@
 					aria-label="Menu"
 					@click="toggleLeftDrawer"
 				/>
+				<q-btn
+					v-else
+					flat
+					dense
+					round
+					icon="arrow_back"
+					aria-label="Go back"
+					@click="$router.back()"
+				/>
 
-				<q-toolbar-title>Klay</q-toolbar-title>
+				<q-toolbar-title> Klay </q-toolbar-title>
+
+				<q-btn
+					flat
+					dense
+					round
+					icon="settings"
+					aria-label="Settings"
+					@click="$router.push('/settings')"
+				/>
 			</q-toolbar>
 		</q-header>
 
@@ -40,12 +59,13 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue'
+import { defineComponent, ref, computed } from 'vue'
 import ContactsItem from 'src/components/ContactsItem.vue'
 // this is a vetur problem
 import AuthPage from 'pages/AuthPage.vue'
 import user, { loadUser } from '../stores/user'
 import { useStore } from '@nanostores/vue'
+import { useRoute } from 'vue-router'
 
 const contacts = [
 	{
@@ -86,11 +106,13 @@ export default defineComponent({
 		const leftDrawerOpen = ref(false)
 		const u = useStore(user)
 		const loading = ref(true)
+		const path = computed(() => useRoute().path)
 
 		return {
 			contacts,
 			leftDrawerOpen,
 			u,
+			path,
 			toggleLeftDrawer() {
 				leftDrawerOpen.value = !leftDrawerOpen.value
 			},
