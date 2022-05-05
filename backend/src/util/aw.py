@@ -1,3 +1,5 @@
+import os
+
 from appwrite.client import Client
 from appwrite.services.account import Account
 from appwrite.services.avatars import Avatars
@@ -59,5 +61,15 @@ def get_appwrite(client: Client):
     """
     Returns all appwrite services in one object
     """
+
+    return Appwrite(client)
+
+
+def get_admin_appwrite():
+    client = Client()
+
+    client.set_endpoint(os.getenv("APPWRITE_ENDPOINT")) \
+        .set_project(os.getenv("APPWRITE_PROJECT_ID")) \
+        .set_key(os.getenv("APPWRITE_SECRET_KEY"))
 
     return Appwrite(client)
