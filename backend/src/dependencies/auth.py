@@ -1,11 +1,11 @@
 import os
 
 from appwrite.client import Client
-from appwrite.services.account import Account
 from appwrite.exception import AppwriteException
 from fastapi import Header
 
 from src.exceptions.HTTPException import HTTPException
+from src.util.aw import get_appwrite
 
 
 def auth(required=True):
@@ -25,13 +25,14 @@ def auth(required=True):
             return None
 
         # Create appwrite user
-        appwrite = Client()
-        appwrite.set_endpoint(os.getenv("APPWRITE_ENDPOINT"))\
+        client = Client()
+        client.set_endpoint(os.getenv("APPWRITE_ENDPOINT"))\
             .set_project(os.getenv("APPWRITE_PROJECT_ID"))\
             .set_jwt(token)
+        appwrite = get_appwrite(client)
 
         try:
-            user = Account(appwrite).get()
+            user = appwrite.account.get()
             print(user)
             return appwrite
         except AppwriteException:

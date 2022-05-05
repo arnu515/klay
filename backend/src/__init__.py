@@ -1,6 +1,3 @@
-from appwrite.client import Client
-from appwrite.services.account import Account
-from fastapi import Depends
 from fastapi.middleware.cors import CORSMiddleware
 
 from .app import app
