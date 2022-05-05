@@ -28,10 +28,10 @@
 					v-if="u"
 					dense
 					round
-					icon="people"
-					aria-label="Contacts"
-					title="Contacts"
-					@click="$router.push('/contacts')"
+					icon="add"
+					aria-label="Add a person"
+					title="Add person"
+					@click="$router.push('/add')"
 				/>
 				<q-btn
 					flat
