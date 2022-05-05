@@ -32,6 +32,11 @@ toolbarTitle.set('Settings')
 
 const settings = ref([
 	{
+		name: 'Status',
+		icon: 'emoji_emotions',
+		path: 'status'
+	},
+	{
 		name: 'Profile',
 		icon: 'person',
 		path: 'profile'
