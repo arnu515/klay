@@ -10,6 +10,7 @@ fastapi = "^0.75.2"
 uvicorn = {extras = ["standard"], version = "^0.17.6"}
 appwrite = "^0.8.0"
 python-multipart = "^0.0.5"
+Pillow = "^9.1.0"
 
 [tool.poetry.dev-dependencies]
 
