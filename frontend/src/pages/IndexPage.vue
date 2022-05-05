@@ -17,7 +17,7 @@
 					</div>
 				</q-card-section>
 				<q-separator />
-				<q-card-section class="messages">
+				<q-card-section id="messages" class="messages">
 					<div v-for="message of messages" v-bind:key="message.id">
 						<chat-message
 							:avatar="message.avatar"
@@ -209,6 +209,13 @@ export default defineComponent({
 			}
 		])
 		return { text, messages }
+	},
+	mounted() {
+		const messages = document.getElementById('messages') as HTMLDivElement
+		if (messages) {
+			// scroll to bottom
+			messages.scrollTop = messages.scrollHeight
+		}
 	}
 })
 </script>
