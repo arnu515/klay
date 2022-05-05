@@ -1,7 +1,5 @@
 <template>
-	<div style="padding: 1rem">
-		<h1 class="text-h4">{{ title }}</h1>
-	</div>
+	<h1 style="margin: 0; padding: 1rem" class="text-h4">{{ title }}</h1>
 	<router-view />
 </template>
 
