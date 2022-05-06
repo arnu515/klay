@@ -16,6 +16,8 @@ def create_chat_request(user_id: str, user_aw: Appwrite = Depends(auth()),
     Create a chat request from logged-in user to ``user_id``
     """
     user = user_aw.account.get()
+    if user_id == user.get("$id"):
+        raise HTTPException("You can't send a chat request to yourself", 400)
     # check for existing chat request
     chat_request1 = appwrite.database.list_documents("chat_requests", [
         Query.equal("userId1", user.get("$id")),

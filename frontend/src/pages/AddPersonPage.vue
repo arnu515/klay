@@ -12,6 +12,10 @@
 						aria-label="Person ID"
 						placeholder="Enter person's ID"
 						clearable
+						:rules="[
+              val => val.length > 0 || 'Person ID is required',
+              val => val.trim() !== user!.$id || 'You can\'t add yourself'
+            ]"
 					>
 						<template v-slot:append v-if="showClipboardButton">
 							<q-btn
@@ -92,6 +96,7 @@ main {
 	padding: 1rem;
 	padding-top: 3.5rem;
 }
+
 .wrapper {
 	max-width: map-get($sizes, 'md');
 	margin: 1rem auto;
@@ -100,14 +105,17 @@ main {
 	overflow: auto;
 	scrollbar-color: $primary white;
 	scrollbar-width: thin;
+
 	&::-webkit-scrollbar-thumb {
 		background-color: $primary;
 	}
+
 	&::-webkit-scrollbar {
 		width: 5px;
 		background-color: inherit;
 	}
 }
+
 .qr-img {
 	display: flex;
 	align-items: center;
