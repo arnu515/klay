@@ -42,8 +42,13 @@
 	</main>
 	<ScanQRCode
 		v-else
-		@close="isScanningQR = false"
-		@scan="res => (personId = res.content)"
+		@close="
+			() => {
+				isScanningQR = false
+				toolbarTitle.set('Add a person')
+			}
+		"
+		@scan="res => (personId = res)"
 	/>
 </template>
 
@@ -70,7 +75,9 @@ import { Dialog, useQuasar } from 'quasar'
 import { onMounted, ref } from 'vue'
 import { Clipboard } from 'app/src-capacitor/node_modules/@capacitor/clipboard'
 import ScanQRCode from 'components/ScanQRCode.vue'
+import toolbarTitle from 'src/stores/toolbarTitle'
 
+toolbarTitle.set('Add a person')
 const personId = ref('')
 const showClipboardButton = ref(true)
 const showQRButton = ref(true)
@@ -78,8 +85,22 @@ const isScanningQR = ref(false)
 const q = useQuasar()
 
 onMounted(() => {
-	if (!q.platform.is.capacitor && typeof navigator.clipboard.readText !== 'function') {
+	if (
+		!q.platform.is.capacitor &&
+		(!('clipboard' in navigator) || typeof navigator.clipboard.readText !== 'function')
+	) {
 		showClipboardButton.value = false
+	}
+	if (!q.platform.is.capacitor) {
+		if (!('mediaDevices' in navigator)) {
+			showQRButton.value = false
+			return
+		}
+		navigator.mediaDevices.enumerateDevices().then(d => {
+			if (d.filter(d => d.kind === 'videoinput').length === 0) {
+				showQRButton.value = false
+			}
+		})
 	}
 })
 
