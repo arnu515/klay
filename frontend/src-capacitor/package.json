@@ -5,8 +5,10 @@
   "author": "arnu515 <52203828+arnu515@users.noreply.github.com>",
   "private": true,
   "dependencies": {
-    "@capacitor/android": "2.5.0",
-    "@capacitor/cli": "^2.0.0",
-    "@capacitor/core": "^2.0.0"
+    "@capacitor-community/barcode-scanner": "^2.1.1",
+    "@capacitor/android": "^3.5.1",
+    "@capacitor/cli": "^3.5.1",
+    "@capacitor/clipboard": "^1.0.8",
+    "@capacitor/core": "^3.5.1"
   }
 }
