@@ -5,6 +5,9 @@ export function parseFastApiError(data: Record<string, any>): string {
 	if (data.error) {
 		return `${data.error}: ${data.error_description || data.error}`
 	}
+	if (data.message) {
+		return data.message
+	}
 	if (Array.isArray(data.detail)) {
 		let msg = ''
 		for (const item of data.detail) {
