@@ -9,7 +9,7 @@
 					round
 					icon="menu"
 					aria-label="Menu"
-					@click="toggleLeftDrawer"
+					@click="u && toggleLeftDrawer()"
 				/>
 				<q-btn
 					v-else
@@ -24,17 +24,26 @@
 				<q-toolbar-title> {{ title }} </q-toolbar-title>
 
 				<q-btn-dropdown
+					v-if="u"
 					flat
 					dense
+					no-caps
 					no-icon-animation
 					dropdown-icon="more_vert"
 					auto-close
 				>
+					<template v-slot:label v-if="!!dropdownBadges">
+						<q-badge floating round color="red" />
+					</template>
 					<ul class="dropdown">
 						<li v-for="(s, i) in moreItems" :key="i">
 							<button v-ripple @click="this.$router.push(s.to)">
 								<q-icon size="24px" :name="s.icon" />
 								<span>{{ s.title }}</span>
+								<div style="margin-left: auto">
+									<q-badge v-if="!!s.badge" color="red">{{ s.badge }}</q-badge>
+									<span v-else style="padding-left: 1rem">&nbsp;</span>
+								</div>
 							</button>
 						</li>
 					</ul>
@@ -104,6 +113,7 @@ import user, { loadUser } from '../stores/user'
 import toolbarTitle from '../stores/toolbarTitle'
 import { useStore } from '@nanostores/vue'
 import { useRoute } from 'vue-router'
+import { chatRequests, loadChatRequests } from '../stores/chatRequests'
 
 const contacts = [
 	{
@@ -132,24 +142,6 @@ const contacts = [
 	}
 ]
 
-const moreItems = [
-	{
-		title: 'Add a person',
-		icon: 'person_add',
-		to: '/add'
-	},
-	{
-		title: 'Contact requests',
-		icon: 'people',
-		to: '/requests'
-	},
-	{
-		title: 'Settings',
-		icon: 'settings',
-		to: '/settings'
-	}
-]
-
 export default defineComponent({
 	name: 'MainLayout',
 
@@ -164,12 +156,40 @@ export default defineComponent({
 		const loading = ref(true)
 		const path = computed(() => useRoute().path)
 		const title = useStore(toolbarTitle)
+		const dropdownBadges = computed(() => {
+			let badges = 0
+			moreItems.value.forEach(i => (badges += i.badge))
+			return badges
+		})
+		const requests = useStore(chatRequests)
+		const moreItems = computed(() => [
+			{
+				title: 'Add a person',
+				icon: 'person_add',
+				to: '/add',
+				badge: 0
+			},
+			{
+				title: 'Contact requests',
+				icon: 'people',
+				to: '/requests',
+				badge: requests.value.length
+			},
+			{
+				title: 'Settings',
+				icon: 'settings',
+				to: '/settings',
+				badge: 0
+			}
+		])
 
 		return {
 			contacts,
+			requests,
 			moreItems,
 			leftDrawerOpen,
 			u,
+			dropdownBadges,
 			path,
 			title,
 			toggleLeftDrawer() {
@@ -182,6 +202,7 @@ export default defineComponent({
 		loadUser().then(() => {
 			this.loading = false
 		})
+		loadChatRequests()
 	}
 })
 </script>
