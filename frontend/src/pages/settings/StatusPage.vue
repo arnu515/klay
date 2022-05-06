@@ -1,6 +1,6 @@
 <template>
 	<div style="padding: 1rem">
-		<q-form @reset="status = profile.status" @submit.prevent="changeStatus">
+		<q-form @reset="status = profile!.status" @submit.prevent="changeStatus">
 			<h3 class="text-h6" id="status-heading">Currently set to:</h3>
 			<q-input
 				outlined
@@ -22,7 +22,7 @@
 				<q-btn type="reset" flat dense icon="replay" />
 				<q-btn
 					type="submit"
-					:disable="status === profile.status"
+					:disable="status === profile!.status"
 					color="primary"
 					:loading="loading"
 					>Save</q-btn

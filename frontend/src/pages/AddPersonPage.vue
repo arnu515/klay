@@ -45,7 +45,7 @@
 				<q-field filled>
 					<template v-slot:control>
 						<div class="self-center full-width no-outline" tabindex="0">
-							{{ user.$id }}
+							{{ user!.$id }}
 						</div>
 					</template>
 					<template v-slot:after>

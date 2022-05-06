@@ -111,7 +111,7 @@
 					type="submit"
 					:disable="!password.o || !password.n || password.c !== password.n"
 					color="primary"
-					:loading="loading.name"
+					:loading="loading.password"
 					>Save</q-btn
 				>
 			</div>
@@ -154,7 +154,7 @@ import userStore, { loadUser } from 'src/stores/user'
 import { useStore } from '@nanostores/vue'
 import appwrite from 'src/lib/appwrite'
 import { Dialog } from 'quasar'
-import * as v from 'validator'
+import v from 'validator'
 
 toolbarTitle.set('Account')
 

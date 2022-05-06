@@ -1,6 +1,6 @@
 <template>
 	<div style="padding: 1rem">
-		<q-form @reset="name = user.name" @submit.prevent="changeName">
+		<q-form @reset="name = user!.name" @submit.prevent="changeName">
 			<h3 class="text-h6">Name</h3>
 			<q-input
 				outlined
@@ -22,14 +22,14 @@
 				<q-btn type="reset" flat dense icon="replay" />
 				<q-btn
 					type="submit"
-					:disable="name === user.name"
+					:disable="name === user!.name"
 					color="primary"
 					:loading="loading.name"
 					>Save</q-btn
 				>
 			</div>
 		</q-form>
-		<q-form @reset="about = profile.bio" @submit.prevent="changeAbout">
+		<q-form @reset="about = profile!.bio || ''" @submit.prevent="changeAbout">
 			<h3 class="text-h6">About</h3>
 			<q-input
 				outlined
@@ -51,7 +51,7 @@
 				<q-btn type="reset" flat dense icon="replay" />
 				<q-btn
 					type="submit"
-					:disable="about === profile.bio"
+					:disable="about === profile!.bio"
 					color="primary"
 					:loading="loading.name"
 					>Save</q-btn
@@ -73,7 +73,7 @@
 						>Use default avatar</q-btn
 					>
 				</div>
-				<img :src="profile.avatar_url" ref="avatarImg" alt="Avatar" />
+				<img :src="profile!.avatar_url" ref="avatarImg" alt="Avatar" />
 			</div>
 			<div class="submit">
 				<q-btn type="reset" flat dense icon="replay" />

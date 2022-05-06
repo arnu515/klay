@@ -37,7 +37,7 @@
 					</template>
 					<ul class="dropdown">
 						<li v-for="(s, i) in moreItems" :key="i">
-							<button v-ripple @click="this.$router.push(s.to)">
+							<button v-ripple @click="$router.push(s.to)">
 								<q-icon size="24px" :name="s.icon" />
 								<span>{{ s.title }}</span>
 								<div style="margin-left: auto">
@@ -107,7 +107,6 @@
 <script lang="ts">
 import { defineComponent, ref, computed } from 'vue'
 import ContactsItem from 'src/components/ContactsItem.vue'
-// this is a vetur problem
 import AuthPage from 'pages/AuthPage.vue'
 import user, { loadUser } from '../stores/user'
 import toolbarTitle from '../stores/toolbarTitle'
