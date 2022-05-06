@@ -1,6 +1,6 @@
 <template>
 	<main>
-		<div class="wrapper">
+		<div class="wrapper native-mobile-only">
 			<ul class="btns">
 				<li>
 					<button @click="toggleFlashlight">
@@ -20,12 +20,32 @@
 				</li>
 			</ul>
 		</div>
-		<div class="qr-box">
+		<div class="qr-box native-mobile-only">
 			Place QR Code in this frame
 			<div class="a"></div>
 			<div class="b"></div>
 			<div class="c"></div>
 			<div class="d"></div>
+		</div>
+		<div class="native-mobile-hide">
+			<div id="web-scanner"></div>
+			<br />
+			<div class="wrapper web">
+				<ul class="btns">
+					<li>
+						<button @click="toggleFlashlight">
+							<q-icon color="white" name="cameraswitch" size="36px" />
+							<span>Flip camera</span>
+						</button>
+					</li>
+					<li>
+						<button @click="close">
+							<q-icon color="white" name="close" size="36px" />
+							<span>Close</span>
+						</button>
+					</li>
+				</ul>
+			</div>
 		</div>
 	</main>
 </template>
@@ -47,6 +67,11 @@ main {
 	border: 1px black solid;
 	border-radius: 0.5rem;
 	padding: 1rem;
+	&.web {
+		position: fixed;
+		bottom: 2rem;
+		width: calc(100% - 2rem);
+	}
 }
 .btns {
 	list-style-type: none;
@@ -134,18 +159,28 @@ import {
 	BarcodeScanner,
 	SupportedFormat
 } from 'app/src-capacitor/node_modules/@capacitor-community/barcode-scanner'
+import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode'
+import toolbarTitle from 'src/stores/toolbarTitle'
 
 export default defineComponent({
 	name: 'ScanQRCode',
 	data() {
 		return {
 			isFlashlightOn: false,
-			isCameraFacingFront: false
+			webScanner: undefined as Html5Qrcode | undefined
+		}
+	},
+	props: {
+		title: {
+			type: String,
+			default: 'Scan QR Code'
 		}
 	},
 	emits: ['scan', 'close', 'toggleFlash'],
 	async mounted() {
+		toolbarTitle.set(this.title)
 		const q = this.$q
+
 		if (q.platform.is.capacitor) {
 			function openSettingsDialog() {
 				Dialog.create({
@@ -198,6 +233,62 @@ export default defineComponent({
 			})
 			this.$emit('scan', res)
 			this.$emit('close')
+		} else {
+			function deniedCameraDialog() {
+				Dialog.create({
+					title: 'Permission denied',
+					message:
+						'You have denied the permission to use the camera. Please allow it and reload this webpage.',
+					ok: {
+						label: 'Instructions',
+						flat: true,
+						icon: 'launch',
+						color: 'primary'
+					},
+					cancel: {
+						label: 'Cancel',
+						flat: true
+					}
+				}).onOk(() => {
+					if (q.platform.is.firefox) {
+						window.open(
+							'https://support.mozilla.org/en-US/kb/how-manage-your-camera-and-microphone-permissions'
+						)
+					} else {
+						window.open('https://support.google.com/chrome/answer/2693767')
+					}
+				})
+			}
+			const devices = await Html5Qrcode.getCameras()
+				.then(d => d)
+				.catch(e => {
+					console.error(e)
+					return null
+				})
+			if (!devices || !devices.length) {
+				deniedCameraDialog()
+				return
+			}
+			this.webScanner = new Html5Qrcode('web-scanner', {
+				verbose: false,
+				formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE]
+			})
+			this.webScanner
+				.start(
+					{ facingMode: 'environment' },
+					{
+						fps: 10,
+						qrbox: { width: 200, height: 200 }
+					},
+					text => {
+						this.$emit('scan', text)
+						this.$emit('close')
+					},
+					() => {
+						//
+					}
+				)
+				.catch(console.error)
 		}
 	},
 
@@ -206,6 +297,11 @@ export default defineComponent({
 			if (this.$q.platform.is.capacitor) {
 				await BarcodeScanner.showBackground()
 				await BarcodeScanner.stopScan()
+			} else {
+				if (this.webScanner) {
+					await this.webScanner.stop()
+					this.webScanner = undefined
+				}
 			}
 		},
 		async toggleFlashlight() {
@@ -215,9 +311,30 @@ export default defineComponent({
 				} else {
 					await BarcodeScanner.enableTorch()
 				}
-				this.$emit('toggleFlash', !this.isFlashlightOn)
-				this.isFlashlightOn = !this.isFlashlightOn
+			} else {
+				// flip camera on web
+				// if isFlashlightOn is true, it means the camera is facing front
+				if (!this.webScanner) return
+				this.webScanner.stop()
+				this.webScanner
+					.start(
+						{ facingMode: this.isFlashlightOn ? 'environment' : 'user' },
+						{
+							fps: 10,
+							qrbox: { width: 200, height: 200 }
+						},
+						text => {
+							this.$emit('scan', { content: text })
+							this.$emit('close')
+						},
+						() => {
+							//
+						}
+					)
+					.catch(console.error)
 			}
+			this.$emit('toggleFlash', !this.isFlashlightOn)
+			this.isFlashlightOn = !this.isFlashlightOn
 		},
 		async close() {
 			this.$emit('close')
