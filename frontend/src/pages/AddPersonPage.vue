@@ -13,7 +13,6 @@
 						placeholder="Enter person's ID"
 						clearable
 						:rules="[
-              val => val.length > 0 || 'Person ID is required',
               val => val.trim() !== user!.$id || 'You can\'t add yourself'
             ]"
 					>
