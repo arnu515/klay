@@ -140,14 +140,15 @@ async function submit() {
 			email.value = ''
 			pw.value = ''
 			name.value = ''
+			mode.value = 'login'
 			q.dialog({
 				title: 'Success',
 				message: 'Account created. Please log in'
 			})
 		} else {
 			await appwrite.account.createSession(email.value.trim(), pw.value.trim())
+			await loadUser()
 		}
-		await loadUser()
 		loading.value = false
 	} catch (e) {
 		loading.value = false
