@@ -16,3 +16,9 @@ export interface Contacts {
 	userId1: string
 	userId2: string
 }
+
+export interface SafeUser {
+	$id: string
+	email: string
+	name: string
+}
