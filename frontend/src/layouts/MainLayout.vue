@@ -23,25 +23,22 @@
 
 				<q-toolbar-title> {{ title }} </q-toolbar-title>
 
-				<q-btn
-					flat
-					v-if="u"
-					dense
-					round
-					icon="add"
-					aria-label="Add a person"
-					title="Add person"
-					@click="$router.push('/add')"
-				/>
-				<q-btn
+				<q-btn-dropdown
 					flat
 					dense
-					round
-					icon="settings"
-					aria-label="Settings"
-					title="Settings"
-					@click="$router.push('/settings')"
-				/>
+					no-icon-animation
+					dropdown-icon="more_vert"
+					auto-close
+				>
+					<ul class="dropdown">
+						<li v-for="(s, i) in moreItems" :key="i">
+							<button v-ripple @click="this.$router.push(s.to)">
+								<q-icon size="24px" :name="s.icon" />
+								<span>{{ s.title }}</span>
+							</button>
+						</li>
+					</ul>
+				</q-btn-dropdown>
 			</q-toolbar>
 		</q-header>
 
@@ -68,6 +65,35 @@
 		</q-page-container>
 	</q-layout>
 </template>
+
+<style lang="scss" scoped>
+.dropdown {
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+	background-color: white;
+	min-width: 100px;
+	li button {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		cursor: pointer;
+		width: 100%;
+		background-color: white;
+		border: 1px solid transparent;
+		outline: none;
+		padding: 0.5rem 1rem;
+		transition: all 500ms ease;
+		&:focus {
+			border-color: gray;
+		}
+		&:hover {
+			filter: brightness(0.9);
+		}
+	}
+}
+</style>
 
 <script lang="ts">
 import { defineComponent, ref, computed } from 'vue'
@@ -106,6 +132,24 @@ const contacts = [
 	}
 ]
 
+const moreItems = [
+	{
+		title: 'Add a person',
+		icon: 'person_add',
+		to: '/add'
+	},
+	{
+		title: 'Contact requests',
+		icon: 'people',
+		to: '/requests'
+	},
+	{
+		title: 'Settings',
+		icon: 'settings',
+		to: '/settings'
+	}
+]
+
 export default defineComponent({
 	name: 'MainLayout',
 
@@ -123,6 +167,7 @@ export default defineComponent({
 
 		return {
 			contacts,
+			moreItems,
 			leftDrawerOpen,
 			u,
 			path,
