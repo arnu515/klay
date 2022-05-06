@@ -37,7 +37,7 @@
 						</template>
 					</q-input>
 					<div class="flex justify-end">
-						<q-btn color="primary" type="submit">Add person</q-btn>
+						<q-btn color="primary" :loading="loading" type="submit">Add person</q-btn>
 					</div>
 				</q-form>
 				<br />
@@ -125,9 +125,13 @@ import toolbarTitle from 'src/stores/toolbarTitle'
 import userStore from 'src/stores/user'
 import { useStore } from '@nanostores/vue'
 import appwrite from 'src/lib/appwrite'
+import axios from 'src/lib/axios'
+import { getJWT } from 'src/lib/jwt'
+import { getProfileOfUser, parseFastApiError } from 'src/lib/util'
 
 toolbarTitle.set('Add a person')
 const personId = ref('')
+const loading = ref(false)
 const showClipboardButton = ref(true)
 const showQRButton = ref(true)
 const isScanningQR = ref(false)
@@ -161,8 +165,33 @@ async function scanQRCode() {
 	isScanningQR.value = true
 }
 
-function addPerson() {
-	//
+async function addPerson() {
+	if (!personId.value.trim()) return
+	if (loading.value) return
+	loading.value = true
+	const res = await axios.post(
+		'/api/chat_requests/' + personId.value.trim(),
+		undefined,
+		{
+			headers: {
+				Authorization: 'Bearer ' + (await getJWT())
+			}
+		}
+	)
+	if (res.status === 200) {
+		const profile = await getProfileOfUser(personId.value.trim())
+		Dialog.create({
+			title: 'Success',
+			message: `Sent a chat request to ${profile?.user?.name || personId}!`
+		})
+	} else {
+		Dialog.create({
+			title: 'Error',
+			message: parseFastApiError(res.data)
+		})
+	}
+	personId.value = ''
+	loading.value = false
 }
 
 function pasteFromClipboard() {
