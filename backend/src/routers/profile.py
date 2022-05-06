@@ -23,6 +23,21 @@ def get_my_profile(appwrite: Appwrite = Depends(auth())):
     return profile
 
 
+@router.get("/{user_id}")
+def get_user_profile(user_id: str, appwrite: Appwrite = Depends(get_admin_appwrite)):
+    """
+    Get user's profile and user
+    """
+    user = appwrite.users.get(user_id)
+    profile = appwrite.database.get_document("profiles", user_id)
+    safe_user = {
+        "$id": user.get("$id"),
+        "email": user.get("email"),
+        "name": user.get("name"),
+    }
+    return {"user": safe_user, "profile": profile}
+
+
 class UpdateProfileBody(BaseModel):
     status: str = Field(..., max_length=512)
     bio: str | None = Field(None, max_length=2048)
