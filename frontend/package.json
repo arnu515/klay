@@ -8,6 +8,8 @@
 	"scripts": {
 		"build": "quasar build",
 		"dev": "quasar dev --port 3000",
+		"dev:spa": "quasar dev --port 3000",
+		"dev:android": "quasar dev --port 3000 --mode capacitor --target android",
 		"format": "prettier --write ."
 	},
 	"dependencies": {
