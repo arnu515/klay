@@ -18,6 +18,17 @@ def create_chat_request(user_id: str, user_aw: Appwrite = Depends(auth()),
     user = user_aw.account.get()
     if user_id == user.get("$id"):
         raise HTTPException("You can't send a chat request to yourself", 400)
+    # check for existing contact
+    contact1 = appwrite.database.list_documents("contacts", [
+        Query.equal("userId1", user.get("$id")),
+        Query.equal("userId2", user_id),
+    ])
+    contact2 = appwrite.database.list_documents("contacts", [
+        Query.equal("userId1", user_id),
+        Query.equal("userId2", user.get("$id")),
+    ])
+    if contact1["total"] > 0 or contact2["total"] > 0:
+        raise HTTPException("You already have a contact with this user", 400)
     # check for existing chat request
     chat_request1 = appwrite.database.list_documents("chat_requests", [
         Query.equal("userId1", user.get("$id")),
