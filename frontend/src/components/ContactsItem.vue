@@ -1,5 +1,5 @@
 <template>
-	<q-item clickable tag="a">
+	<q-item clickable @click="onClick()" tag="a">
 		<q-item-section avatar>
 			<q-avatar size="32px">
 				<img :src="avatar" alt="Avatar" />
@@ -18,10 +18,17 @@ import { defineComponent } from 'vue'
 
 export default defineComponent({
 	name: 'ContactsList',
+	emits: ['click'],
 	props: {
+		id: String,
 		name: String,
 		lastMessage: String,
 		avatar: String
+	},
+	methods: {
+		onClick() {
+			this.$emit('click', this.id)
+		}
 	}
 })
 </script>

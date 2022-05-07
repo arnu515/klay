@@ -58,6 +58,8 @@
 				<ContactsItem
 					v-for="contact in contacts"
 					v-bind:key="contact.$id"
+					@click="setContact"
+					:id="contact.$id"
 					:name="
 						contact.profile1.$id !== u.$id ? contact.user1.name : contact.user2.name
 					"
@@ -123,7 +125,7 @@ import toolbarTitle from '../stores/toolbarTitle'
 import { useStore } from '@nanostores/vue'
 import { useRoute } from 'vue-router'
 import { chatRequests, loadChatRequests } from '../stores/chatRequests'
-import contactsStore from 'src/stores/contacts'
+import contactsStore, { currentContact } from 'src/stores/contacts'
 import { loadContacts } from 'src/stores/contacts'
 
 export default defineComponent({
@@ -168,8 +170,16 @@ export default defineComponent({
 		])
 		const contacts = useStore(contactsStore)
 
+		function setContact(id: string) {
+			const contact = contacts.value.find(c => c.$id === id)
+			if (!contact) return
+			currentContact.set(contact)
+			leftDrawerOpen.value = false
+		}
+
 		return {
 			contacts,
+			setContact,
 			requests,
 			moreItems,
 			leftDrawerOpen,
