@@ -200,8 +200,8 @@ export default defineComponent({
 	mounted() {
 		loadUser().then(() => {
 			this.loading = false
+			loadChatRequests()
 		})
-		loadChatRequests()
 	}
 })
 </script>
