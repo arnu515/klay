@@ -51,16 +51,26 @@
 			</q-toolbar>
 		</q-header>
 
-		<q-drawer v-model="leftDrawerOpen" show-if-above bordered>
+		<q-drawer v-if="u" v-model="leftDrawerOpen" show-if-above bordered>
 			<q-list>
 				<q-item-label header> Contacts </q-item-label>
 
 				<ContactsItem
 					v-for="contact in contacts"
-					v-bind:key="contact.id"
-					:name="contact.name"
-					:avatar="contact.avatar"
-					:lastMessage="contact.lastMessage"
+					v-bind:key="contact.$id"
+					:name="
+						contact.profile1.$id === u.$id ? contact.user1.name : contact.user2.name
+					"
+					:avatar="
+						contact.profile1.$id === u.$id
+							? contact.profile1.avatar_url
+							: contact.profile2.avatar_url
+					"
+					:lastMessage="
+						contact.profile1.$id === u.$id
+							? contact.profile1.status
+							: contact.profile2.status
+					"
 				/>
 			</q-list>
 		</q-drawer>
@@ -113,33 +123,8 @@ import toolbarTitle from '../stores/toolbarTitle'
 import { useStore } from '@nanostores/vue'
 import { useRoute } from 'vue-router'
 import { chatRequests, loadChatRequests } from '../stores/chatRequests'
-
-const contacts = [
-	{
-		id: 1,
-		name: 'A contact',
-		lastMessage: 'You: Test',
-		avatar: 'https://picsum.photos/64'
-	},
-	{
-		id: 2,
-		name: 'Another contact',
-		lastMessage: 'Another contact: Hi',
-		avatar: 'https://picsum.photos/64'
-	},
-	{
-		id: 3,
-		name: 'One more contact',
-		lastMessage: 'You: Ok',
-		avatar: 'https://picsum.photos/64'
-	},
-	{
-		id: 4,
-		name: 'Last contact',
-		lastMessage: 'You: Hello',
-		avatar: 'https://picsum.photos/64'
-	}
-]
+import contactsStore from 'src/stores/contacts'
+import { loadContacts } from 'src/stores/contacts'
 
 export default defineComponent({
 	name: 'MainLayout',
@@ -181,6 +166,7 @@ export default defineComponent({
 				badge: 0
 			}
 		])
+		const contacts = useStore(contactsStore)
 
 		return {
 			contacts,
@@ -198,9 +184,10 @@ export default defineComponent({
 		}
 	},
 	mounted() {
-		loadUser().then(() => {
+		loadUser().then(async () => {
 			this.loading = false
-			loadChatRequests()
+			await loadChatRequests()
+			await loadContacts()
 		})
 	}
 })
