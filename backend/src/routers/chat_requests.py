@@ -40,3 +40,42 @@ def create_chat_request(user_id: str, user_aw: Appwrite = Depends(auth()),
     }, [f"user:{user.get('$id')}", f"user:{user_id}"])
 
     return chat_request
+
+
+@router.patch("/{request_id}/{action}")
+def accept_chat_request(request_id: str, action: str, user_aw: Appwrite = Depends(auth()),
+                        appwrite: Appwrite = Depends(get_admin_appwrite)):
+    """
+    Accept or reject a chat request
+    """
+    if action not in ["accept", "reject"]:
+        raise HTTPException("Invalid action. Action must be one of accept, reject", 400)
+    chat_request = appwrite.database.get_document("chat_requests", request_id)
+    if chat_request is None:
+        raise HTTPException("Chat request not found", 404)
+    if chat_request.get("userId2") != user_aw.account.get().get("$id"):
+        raise HTTPException("You can't accept or reject a chat request that you didn't receive", 403)
+    if action == "accept":
+        appwrite.database.create_document("contacts", "unique()", {
+            "userId1": chat_request.get("userId1"),
+            "userId2": chat_request.get("userId2"),
+        }, [f"user:{chat_request.get('userId1')}", f"user:{chat_request.get('userId2')}"])
+        appwrite.database.delete_document("chat_requests", request_id)
+    elif action == "reject":
+        appwrite.database.delete_document("chat_requests", request_id)
+    return {"success": True}
+
+
+@router.delete("/{request_id}")
+def delete_chat_request(request_id: str, user_aw: Appwrite = Depends(auth()),
+                        appwrite: Appwrite = Depends(get_admin_appwrite)):
+    """
+    Delete a chat request
+    """
+    chat_request = appwrite.database.get_document("chat_requests", request_id)
+    if chat_request is None:
+        raise HTTPException("Chat request not found", 404)
+    if chat_request.get("userId1") != user_aw.account.get().get("$id"):
+        raise HTTPException("You can't delete a chat request that you didn't send", 403)
+    appwrite.database.delete_document("chat_requests", request_id)
+    return {"success": True}
