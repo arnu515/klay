@@ -231,7 +231,7 @@ export default defineComponent({
 			const res = await BarcodeScanner.startScan({
 				targetedFormats: [SupportedFormat.QR_CODE]
 			})
-			this.$emit('scan', res)
+			this.$emit('scan', res.content)
 			this.$emit('close')
 		} else {
 			function deniedCameraDialog() {
