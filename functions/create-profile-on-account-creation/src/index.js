@@ -53,6 +53,10 @@ module.exports = async function (req, res) {
 			avatar_url: `${req.env['APPWRITE_FUNCTION_ENDPOINT']}/storage/buckets/avatars/files/${user.$id}/view?project=${req.env['APPWRITE_FUNCTION_PROJECT_ID']}`,
 			status: 'A Klay user'
 		})
+		profile = await db.createDocument('contacts', 'unique()', {
+			userId1: user.$id,
+			userId2: 'notetoself'
+		}, [`user:${user.$id}`, `user:notetoself`])
 	} else if (event.includes('delete')) {
 		await storage.deleteFile('avatars', user.$id)
 		await db.deleteDocument('profiles', user.$id)
