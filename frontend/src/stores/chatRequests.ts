@@ -20,7 +20,10 @@ onMount(chatRequests, () => {
 	let unsubscribeAw: (() => void) | undefined
 	const unsubscribeUser = user.subscribe(i => {
 		if (unsubscribeAw) return
-		if (!i) return
+		if (!i) {
+			chatRequests.set([])
+			return
+		}
 		console.log('Subscribed to appwrite')
 		unsubscribeAw = appwrite.subscribe<CR>(
 			'collections.chat_requests.documents',
@@ -67,7 +70,10 @@ onMount(chatRequests, () => {
 
 export const loadChatRequests = action(chatRequests, 'loadChatRequests', async () => {
 	const u = user.get()
-	if (!u) return
+	if (!u) {
+		chatRequests.set([])
+		return
+	}
 	const res = await appwrite.database.listDocuments<Models.Document & CR>(
 		'chat_requests',
 		[Query.equal('userId2', u.$id)]

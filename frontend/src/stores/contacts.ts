@@ -20,7 +20,11 @@ onMount(contacts, () => {
 	let unsubscribeAw: (() => void) | undefined
 	const unsubscribeUser = user.subscribe(i => {
 		if (unsubscribeAw) return
-		if (!i) return
+		if (!i) {
+			contacts.set([])
+			currentContact.set(null)
+			return
+		}
 		console.log('[c] Subscribed to appwrite')
 		unsubscribeAw = appwrite.subscribe<C>(
 			'collections.contacts.documents',
@@ -65,7 +69,11 @@ onMount(contacts, () => {
 
 export const loadContacts = action(contacts, 'loadContacts', async () => {
 	const u = user.get()
-	if (!u) return
+	if (!u) {
+		contacts.set([])
+		currentContact.set(null)
+		return
+	}
 	const res1 = await appwrite.database.listDocuments<Models.Document & C>('contacts', [
 		Query.equal('userId1', u.$id)
 	])
