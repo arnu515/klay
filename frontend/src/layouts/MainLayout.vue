@@ -59,15 +59,15 @@
 					v-for="contact in contacts"
 					v-bind:key="contact.$id"
 					:name="
-						contact.profile1.$id === u.$id ? contact.user1.name : contact.user2.name
+						contact.profile1.$id !== u.$id ? contact.user1.name : contact.user2.name
 					"
 					:avatar="
-						contact.profile1.$id === u.$id
+						contact.profile1.$id !== u.$id
 							? contact.profile1.avatar_url
 							: contact.profile2.avatar_url
 					"
 					:lastMessage="
-						contact.profile1.$id === u.$id
+						contact.profile1.$id !== u.$id
 							? contact.profile1.status
 							: contact.profile2.status
 					"

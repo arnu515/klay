@@ -3,21 +3,24 @@
 		<div class="wrapper">
 			<q-card flat bordered style="height: 100%" class="message-box">
 				<q-card-section class="header">
-					<q-avatar size="40px">
+					<q-avatar v-if="ready" size="40px">
 						<img
-							src="https://picsum.photos/64"
+							:src="otherUser.profile.avatar_url"
 							alt="Avatar"
 							style="border: 1px black solid"
 						/>
 					</q-avatar>
+					<q-skeleton v-else type="QAvatar" size="40px" />
 
 					<div class="name-wrapper">
-						<span class="name">Name of user</span>
-						<span class="status">Status of user</span>
+						<span v-if="ready" class="name">{{ otherUser.user.name }}</span>
+						<q-skeleton type="text" v-else width="200px" />
+						<span v-if="ready" class="status">{{ otherUser.profile.status }}</span>
+						<q-skeleton type="text" v-else width="200px" />
 					</div>
 				</q-card-section>
 				<q-separator />
-				<q-card-section id="messages" class="messages">
+				<q-card-section v-if="ready" id="messages" class="messages">
 					<div v-for="message of messages" v-bind:key="message.id">
 						<chat-message
 							:avatar="message.avatar"
@@ -28,7 +31,12 @@
 						/>
 					</div>
 				</q-card-section>
-				<div class="message-input-wrapper">
+				<q-card-section v-else id="messages" class="messages">
+					<div style="display: flex; margin-top: 2rem; justify-content: center">
+						<q-spinner size="32px" color="primary" />
+					</div>
+				</q-card-section>
+				<div v-if="ready" class="message-input-wrapper">
 					<q-input
 						outlined
 						v-model="text"
@@ -135,9 +143,12 @@ main {
 </style>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue'
+import { computed, defineComponent, ref } from 'vue'
 import ChatMessage from 'components/ChatMessage.vue'
 import toolbarTitle from 'src/stores/toolbarTitle'
+import { currentContact } from 'src/stores/contacts'
+import { useStore } from '@nanostores/vue'
+import user from 'src/stores/user'
 
 export default defineComponent({
 	name: 'IndexPage',
@@ -209,7 +220,22 @@ export default defineComponent({
 				avatar: 'https://picsum.photos/64'
 			}
 		])
-		return { text, messages }
+		const contact = useStore(currentContact)
+		const otherUser = computed(() =>
+			contact.value?.user1?.$id !== user.get()!.$id
+				? {
+						user: contact.value?.user1 || null,
+						profile: contact.value?.profile1 || null
+				  }
+				: {
+						user: contact.value?.user2 || null,
+						profile: contact.value?.profile2 || null
+				  }
+		)
+		const ready = computed(
+			() => contact && otherUser && otherUser.value.user && otherUser.value.profile
+		)
+		return { text, messages, contact, otherUser, ready }
 	},
 	mounted() {
 		const messages = document.getElementById('messages') as HTMLDivElement

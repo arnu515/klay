@@ -94,6 +94,9 @@ export const loadContacts = action(contacts, 'loadContacts', async () => {
 		requests.push(request)
 	}
 	contacts.set(requests)
+	currentContact.set({ ...requests[0] })
 })
+
+export const currentContact = atom<Contacts | null>(null)
 
 export default contacts
