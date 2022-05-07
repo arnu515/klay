@@ -1,4 +1,4 @@
-import { Query } from 'appwrite'
+import { Models, Query } from 'appwrite'
 import { action, atom, onMount } from 'nanostores'
 import { Notify } from 'quasar'
 import appwrite from 'src/lib/appwrite'
@@ -68,10 +68,28 @@ onMount(chatRequests, () => {
 export const loadChatRequests = action(chatRequests, 'loadChatRequests', async () => {
 	const u = user.get()
 	if (!u) return
-	const res = await appwrite.database.listDocuments('chat_requests', [
-		Query.equal('userId2', u.$id)
-	])
-	chatRequests.set(res.documents.map(doc => doc as unknown as ChatRequests))
+	const res = await appwrite.database.listDocuments<Models.Document & CR>(
+		'chat_requests',
+		[Query.equal('userId2', u.$id)]
+	)
+	const requests = [] as ChatRequests[]
+	for await (const doc of res.documents) {
+		const u1 = await getProfileOfUser(doc.userId1)
+		const u2 = await getProfileOfUser(doc.userId2)
+		if (!u1 || !u2) {
+			// invalid data, can't trust it
+			return
+		}
+		const request: ChatRequests = {
+			...doc,
+			profile1: u1.profile,
+			profile2: u2.profile,
+			user1: u1.user,
+			user2: u2.user
+		}
+		requests.push(request)
+	}
+	chatRequests.set(requests)
 	if (res.total > 0) {
 		Notify.create({
 			message: 'You have new chat requests',
@@ -79,7 +97,6 @@ export const loadChatRequests = action(chatRequests, 'loadChatRequests', async (
 			textColor: 'black'
 		})
 	}
-	console.log(res.documents)
 })
 
 export default chatRequests
