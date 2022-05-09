@@ -4,7 +4,11 @@
 			<h1 style="text-align: center; font-size: 3rem; font-weight: bold">
 				{{ mode === 'login' ? 'Log In' : 'Sign Up' }}
 			</h1>
-			<q-form @submit.prevent="submit" style="padding: 1rem">
+			<q-form
+				@submit.prevent="submit"
+				v-if="mode !== 'signup-pin'"
+				style="padding: 1rem"
+			>
 				<q-input
 					outlined
 					label="Email"
@@ -77,6 +81,58 @@
 					/>
 				</div>
 			</q-form>
+			<template v-else>
+				<h3 class="text-h5 text-center">One last step</h3>
+				<p class="text-h6 text-center">
+					Enter a 4 digit PIN to restore messages later.
+				</p>
+				<q-form @submit.prevent="signup">
+					<div style="display: flex; justify-content: center">
+						<q-input
+							outlined
+							placeholder="XXXX"
+							aria-label="Pin"
+							stack-label
+							v-model="pin"
+							mask="####"
+							input-style="text-align: center; width: 100%"
+							bottom-slots
+							:rules="[
+								val => val.length === 4 || 'Pin must be 4 characters long',
+								val => /^\d+$/.test(val) || 'Pin must be a number'
+							]"
+						/>
+					</div>
+					<p class="text-callout text-center text-negative" style="margin-top: 1rem">
+						If you lose your PIN, you will lose your messages.<br />
+						You will still be able to sign in to your account.
+					</p>
+					<p class="text-callout text-center" style="margin-top: 1rem">
+						Your PIN will be used to restore messages when you login to another device.
+					</p>
+					<div
+						class="flex column items-center justify-center"
+						style="gap: 1rem; padding-bottom: 1rem"
+					>
+						<q-btn
+							type="submit"
+							color="primary"
+							label="Create Account"
+							size="lg"
+							:loading="loading"
+							:disable="loading || pin.length !== 4"
+						/>
+						<q-btn
+							@click="mode = 'signup'"
+							type="button"
+							flat
+							color="primary"
+							label="Go back"
+							:disable="loading"
+						/>
+					</div>
+				</q-form>
+			</template>
 		</q-card>
 	</div>
 </template>
@@ -109,15 +165,17 @@ import v from 'validator'
 import appwrite from '../lib/appwrite'
 import { useQuasar } from 'quasar'
 import { loadUser } from 'src/stores/user'
+import * as e from 'src/lib/encryption'
 
-const mode = ref<'login' | 'signup'>('login')
+const mode = ref<'login' | 'signup' | 'signup-pin'>('login')
 const isPasswordShown = ref(false)
 const loading = ref(false)
 const q = useQuasar()
 
 const email = ref(''),
 	pw = ref(''),
-	name = ref('')
+	name = ref(''),
+	pin = ref('')
 
 function err(msg: string) {
 	q.dialog({
@@ -129,23 +187,10 @@ function err(msg: string) {
 
 async function submit() {
 	try {
-		loading.value = true
 		if (mode.value === 'signup') {
-			await appwrite.account.create(
-				'unique()',
-				email.value.trim(),
-				pw.value.trim(),
-				name.value.trim()
-			)
-			email.value = ''
-			pw.value = ''
-			name.value = ''
-			mode.value = 'login'
-			q.dialog({
-				title: 'Success',
-				message: 'Account created. Please log in'
-			})
+			mode.value = 'signup-pin'
 		} else {
+			loading.value = true
 			await appwrite.account.createSession(email.value.trim(), pw.value.trim())
 			await loadUser()
 		}
@@ -154,5 +199,57 @@ async function submit() {
 		loading.value = false
 		err((e as any).message)
 	}
+}
+
+async function signup() {
+	console.log('ok')
+	try {
+		loading.value = true
+
+		const keyPair = await e.Asymetric.generateKeys()
+		const encryptedPrivateKey = await e.Symmetric.encryptSymmetric(
+			keyPair.privateKey,
+			pin.value
+		)
+
+		await appwrite.account.create(
+			'unique()',
+			email.value.trim(),
+			pw.value.trim(),
+			name.value.trim()
+		)
+
+		// temporarily log in the user to save keys in db
+		const currentUser = await appwrite.account.createSession(
+			email.value.trim(),
+			pw.value.trim()
+		)
+
+		await appwrite.database.createDocument(
+			'chat_keys',
+			currentUser.userId,
+			{
+				public: keyPair.publicKey,
+				private: JSON.stringify(encryptedPrivateKey)
+			},
+			['role:all'],
+			[`user:${currentUser.userId}`]
+		)
+
+		await appwrite.account.deleteSession('current')
+
+		email.value = ''
+		pw.value = ''
+		name.value = ''
+		mode.value = 'login'
+		q.dialog({
+			title: 'Success',
+			message: 'Account created. Please log in'
+		})
+	} catch (e) {
+		await appwrite.account.deleteSession('current')
+		err((e as any).message)
+	}
+	loading.value = false
 }
 </script>
