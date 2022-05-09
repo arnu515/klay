@@ -1,5 +1,6 @@
 <template>
-	<q-layout view="lHh Lpr lFf">
+	<AskPin v-if="u && !privateKey" />
+	<q-layout view="lHh Lpr lFf" v-else>
 		<q-header elevated>
 			<q-toolbar>
 				<q-btn
@@ -127,13 +128,16 @@ import { useRoute } from 'vue-router'
 import { chatRequests, loadChatRequests } from '../stores/chatRequests'
 import contactsStore, { currentContact } from 'src/stores/contacts'
 import { loadContacts } from 'src/stores/contacts'
+import pKeyStore from 'src/stores/privateKey'
+import AskPin from 'src/components/AskPin.vue'
 
 export default defineComponent({
 	name: 'MainLayout',
 
 	components: {
 		ContactsItem,
-		AuthPage
+		AuthPage,
+		AskPin
 	},
 
 	setup() {
@@ -169,6 +173,7 @@ export default defineComponent({
 			}
 		])
 		const contacts = useStore(contactsStore)
+		const privateKey = useStore(pKeyStore)
 
 		function setContact(id: string) {
 			const contact = contacts.value.find(c => c.$id === id)
@@ -190,7 +195,8 @@ export default defineComponent({
 			toggleLeftDrawer() {
 				leftDrawerOpen.value = !leftDrawerOpen.value
 			},
-			loading
+			loading,
+			privateKey
 		}
 	},
 	mounted() {
