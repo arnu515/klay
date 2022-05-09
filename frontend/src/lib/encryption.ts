@@ -74,31 +74,41 @@ export class Asymetric {
 
 	static async getKeys(keys: KeyPair): Promise<CryptoKeyPair> {
 		const keyPair = Asymetric.cleanKeys(keys)
-		const publicKey = await crypto.subtle.importKey(
-			'spki',
-			unpack(keyPair.publicKey),
-			{
-				name: 'RSA-OAEP',
-				hash: { name: 'SHA-256' }
-			},
-			true,
-			['encrypt']
-		)
-		console.log(publicKey)
-		const privateKey = await crypto.subtle.importKey(
-			'pkcs8',
-			unpack(keyPair.privateKey),
-			{
-				name: 'RSA-OAEP',
-				hash: { name: 'SHA-256' }
-			},
-			true,
-			['decrypt']
-		)
-		console.log(privateKey)
+		const publicKey = await Asymetric.getKey('public', keyPair.publicKey)
+		const privateKey = await Asymetric.getKey('private', keyPair.privateKey)
 		return {
 			publicKey,
 			privateKey
+		}
+	}
+
+	static async getKey(type: 'public' | 'private', key: string): Promise<CryptoKey> {
+		if (type === 'public') {
+			const publicKey = await crypto.subtle.importKey(
+				'spki',
+				unpack(key),
+				{
+					name: 'RSA-OAEP',
+					hash: { name: 'SHA-256' }
+				},
+				true,
+				['encrypt']
+			)
+			console.log(publicKey)
+			return publicKey
+		} else {
+			const privateKey = await crypto.subtle.importKey(
+				'pkcs8',
+				unpack(key),
+				{
+					name: 'RSA-OAEP',
+					hash: { name: 'SHA-256' }
+				},
+				true,
+				['decrypt']
+			)
+			console.log(privateKey)
+			return privateKey
 		}
 	}
 
