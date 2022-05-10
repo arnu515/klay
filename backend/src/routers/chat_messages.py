@@ -22,11 +22,6 @@ class Attachment(BaseModel):
     url: str
 
 
-class CreateChatMessageBody(BaseModel):
-    content: str
-    attachments: None | list[Attachment]
-
-
 @router.get("/message-{message_id}")
 def get_chat_message(message_id: str, aw: Appwrite = Depends(auth())):
     """
@@ -69,6 +64,12 @@ def get_chat_messages(user_id: str, aw: Appwrite = Depends(auth())):
     return {"messages": messages}
 
 
+class CreateChatMessageBody(BaseModel):
+    content1: str
+    content2: str
+    attachments: None | list[Attachment]
+
+
 @router.post("/{user_id}")
 def create_chat_message(user_id: str, body: CreateChatMessageBody, aw: Appwrite = Depends(auth()),
                         appwrite: Appwrite = Depends(get_admin_appwrite)):
@@ -95,7 +96,7 @@ def create_chat_message(user_id: str, body: CreateChatMessageBody, aw: Appwrite 
     col1 = db[f"chat_{user.get('$id')}"]
     col1.insert_one({
         "_id": message_id,
-        "content": body.content,
+        "content": body.content1,
         "attachments": body.attachments,
         "to": user_id
     })
@@ -103,7 +104,7 @@ def create_chat_message(user_id: str, body: CreateChatMessageBody, aw: Appwrite 
     col2 = db[f"chat_{user_id}"]
     res = col2.insert_one({
         "_id": message_id,
-        "content": body.content,
+        "content": body.content2,
         "attachments": body.attachments,
         "to": user.get("$id"),
         "created_at": math.floor(time())
@@ -122,7 +123,8 @@ def create_chat_message(user_id: str, body: CreateChatMessageBody, aw: Appwrite 
 
 class UpdateChatMessageBody(BaseModel):
     message_id: str
-    content: str
+    content1: str
+    content2: str
 
 
 @router.put("/{user_id}")
@@ -155,8 +157,8 @@ def update_chat_message(user_id: str, body: UpdateChatMessageBody, aw: Appwrite 
     if not contact1.get("total") and not contact2.get("total"):
         raise HTTPException("You can't send a chat message to this user", 400)
 
-    col1.update_one({"_id": message1.get("_id")}, {"$set": {"content": body.content}})
-    col2.update_one({"_id": message2.get("_id")}, {"$set": {"content": body.content}})
+    col1.update_one({"_id": message1.get("_id")}, {"$set": {"content": body.content1}})
+    col2.update_one({"_id": message2.get("_id")}, {"$set": {"content": body.content2}})
 
     appwrite.database.create_document("chat_events", "unique()", {
         "userId1": user.get("$id"),
