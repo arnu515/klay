@@ -40,6 +40,7 @@ interface AppwriteFunction {
 // Get a list of all directories in the current directory and register them as funcFromPkgJsontions.
 for (const dir of Deno.readDirSync('.')) {
 	if (!dir.isDirectory) continue
+	if (dir.name === 'node_modules') continue
 	// deno-lint-ignore no-explicit-any
 	let funcFromPkgJson: Record<string, any> = {}
 	try {
