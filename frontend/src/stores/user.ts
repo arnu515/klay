@@ -2,6 +2,8 @@ import { atom, action } from 'nanostores'
 import type { Models } from 'appwrite'
 import appwrite from '../lib/appwrite'
 import keyPair, { checkKeys } from './keyPair'
+import { loadChatRequests } from './chatRequests'
+import { loadContacts } from './contacts'
 
 // using atom instead of map because map doesn't allow null
 // and only the whole object gets changed at a time
@@ -27,6 +29,10 @@ export const loadUser = action(user, 'loadUser', async () => {
 		// load profile
 		const p = await appwrite.database.getDocument('profiles', u.$id)
 		profile.set(p as any)
+
+		// load contacts and chats
+		await loadChatRequests()
+		await loadContacts()
 	} else profile.set(null)
 
 	keyPair.set(await checkKeys())
