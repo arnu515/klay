@@ -71,7 +71,15 @@
 					"
 					:lastMessage="
 						contact.profile1.$id !== u.$id
-							? contact.profile1.status
+							? messages[contact.user1.$id]?.[0].text[0]
+								? `${
+										messages[contact.user1.$id][0].sent ? 'You:' : contact.user1.name
+								  } ${messages[contact.user1.$id]?.[0].text[0]}`
+								: contact.profile1.status
+							: messages[contact.user2.$id]?.[0].text[0]
+							? `${messages[contact.user2.$id][0].sent ? 'You:' : contact.user2.name} ${
+									messages[contact.user2.$id]?.[0].text[0]
+							  }`
 							: contact.profile2.status
 					"
 				/>
@@ -130,6 +138,7 @@ import contactsStore, { currentContact } from 'src/stores/contacts'
 import { loadContacts } from 'src/stores/contacts'
 import keyPairStore from 'src/stores/keyPair'
 import AskPin from 'src/components/AskPin.vue'
+import messagesStore from 'src/stores/messages'
 
 export default defineComponent({
 	name: 'MainLayout',
@@ -174,6 +183,7 @@ export default defineComponent({
 		])
 		const contacts = useStore(contactsStore)
 		const keys = useStore(keyPairStore)
+		const messages = useStore(messagesStore)
 
 		function setContact(id: string) {
 			const contact = contacts.value.find(c => c.$id === id)
@@ -192,6 +202,7 @@ export default defineComponent({
 			dropdownBadges,
 			path,
 			title,
+			messages,
 			toggleLeftDrawer() {
 				leftDrawerOpen.value = !leftDrawerOpen.value
 			},
