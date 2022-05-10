@@ -13,6 +13,7 @@ python-multipart = "^0.0.5"
 Pillow = "^9.1.0"
 python-dotenv = "^0.20.0"
 pymongo = {extras = ["srv"], version = "^4.1.1"}
+nanoid = "^2.0.0"
 
 [tool.poetry.dev-dependencies]
 
