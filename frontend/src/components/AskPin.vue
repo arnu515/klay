@@ -1,15 +1,12 @@
 <template>
-	<div class="wrapper">
-		<q-card
-			style="
-				max-width: 600px;
-				margin: 1rem auto;
-				width: 50%;
-				min-width: 200px;
-				padding: 1rem 2rem;
-			"
-		>
-			<h1 class="text-center text-h4" style="margin-top: 1rem">Enter your pin</h1>
+	<div style="padding: 5rem 1rem">
+		<q-card style="max-width: 600px; margin: 1rem auto">
+			<h1
+				class="text-center"
+				style="font-size: 3rem; font-weight: bold; padding-top: 1rem"
+			>
+				Enter your pin
+			</h1>
 			<q-form @submit.prevent="submit">
 				<div style="display: flex; justify-content: center">
 					<q-input
@@ -54,18 +51,6 @@
 		</q-card>
 	</div>
 </template>
-
-<style lang="scss" scoped>
-.wrapper {
-	position: fixed;
-	display: grid;
-	place-items: center;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-}
-</style>
 
 <script lang="ts" setup>
 import { ref } from 'vue'
