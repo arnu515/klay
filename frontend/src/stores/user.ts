@@ -1,6 +1,7 @@
 import { atom, action } from 'nanostores'
 import type { Models } from 'appwrite'
 import appwrite from '../lib/appwrite'
+import keyPair, { checkKeys } from './keyPair'
 
 // using atom instead of map because map doesn't allow null
 // and only the whole object gets changed at a time
@@ -27,6 +28,8 @@ export const loadUser = action(user, 'loadUser', async () => {
 		const p = await appwrite.database.getDocument('profiles', u.$id)
 		profile.set(p as any)
 	} else profile.set(null)
+
+	keyPair.set(await checkKeys())
 })
 
 export default user
