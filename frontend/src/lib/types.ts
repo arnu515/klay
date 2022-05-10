@@ -22,3 +22,16 @@ export interface SafeUser {
 	email: string
 	name: string
 }
+
+export interface Attachment {
+	type: string
+	url: string
+}
+
+export interface Message {
+	_id: string
+	content: string
+	to: string
+	attachments: Attachment[]
+	created_at: string
+}
