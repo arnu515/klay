@@ -9,6 +9,7 @@ export async function loadKey(userId: string) {
 		Models.Document & { public: string }
 	>('chat_keys', userId)
 	keys.setKey(userId, publicKey)
+	return publicKey
 }
 
 export default keys
