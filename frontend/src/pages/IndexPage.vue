@@ -201,9 +201,15 @@ export default defineComponent({
 
 		watch(otherUser, updateUser)
 
+		let timesTried = 0
 		let int: NodeJS.Timeout | null = setInterval(() => {
 			updateUser(otherUser.value)
-		}, 500)
+			timesTried += 1
+			if (timesTried > 10) {
+				int && clearInterval(int)
+				int = null
+			}
+		}, 2000)
 
 		return { text, messages, contact, otherUser, ready }
 	},
