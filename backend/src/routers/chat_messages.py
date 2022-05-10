@@ -98,7 +98,8 @@ def create_chat_message(user_id: str, body: CreateChatMessageBody, aw: Appwrite 
         "_id": message_id,
         "content": body.content1,
         "attachments": body.attachments,
-        "to": user_id
+        "to": user_id,
+        "created_at": str(math.floor(time()))
     })
 
     col2 = db[f"chat_{user_id}"]
@@ -107,7 +108,7 @@ def create_chat_message(user_id: str, body: CreateChatMessageBody, aw: Appwrite 
         "content": body.content2,
         "attachments": body.attachments,
         "to": user.get("$id"),
-        "created_at": math.floor(time())
+        "created_at": str(math.floor(time()))
     })
 
     perms = (f"user:{user.get('$id')}", f"user:{user_id}")
