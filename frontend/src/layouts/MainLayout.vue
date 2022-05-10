@@ -178,7 +178,7 @@ export default defineComponent({
 		function setContact(id: string) {
 			const contact = contacts.value.find(c => c.$id === id)
 			if (!contact) return
-			currentContact.set(contact)
+			currentContact.set(contact as any)
 			leftDrawerOpen.value = false
 		}
 

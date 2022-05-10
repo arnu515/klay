@@ -25,7 +25,7 @@
 						<chat-message
 							:avatar="message.avatar"
 							:name="message.name"
-							:text="message.text"
+							:text="[...message.text]"
 							:sent="message.sent"
 							:hint="message.hint"
 						/>
@@ -155,71 +155,6 @@ export default defineComponent({
 	components: { ChatMessage },
 	setup() {
 		const text = ref('')
-		const messages = ref([
-			{
-				id: 1,
-				sent: true,
-				text: ['Message text with <strong>HTML Parsing</strong>'],
-				name: 'You',
-				hint: '',
-				avatar: 'https://picsum.photos/64'
-			},
-			{
-				id: 2,
-				sent: false,
-				text: [
-					'More text with <strong>more</strong> <em>HTML</em> <u>parsing</u>',
-					'Some more text!',
-					'Even more!',
-					'But only upto',
-					'A limit of',
-					'Six'
-				],
-				name: 'Other user',
-				hint: '',
-				avatar: 'https://picsum.photos/64'
-			},
-			{
-				id: 3,
-				sent: false,
-				text: ['Separate message'],
-				name: 'Other user',
-				hint: '3 seconds ago',
-				avatar: 'https://picsum.photos/64'
-			},
-			{
-				id: 4,
-				sent: true,
-				text: ['Keep adding text', 'For scroll'],
-				name: 'Other user',
-				hint: '3 seconds ago',
-				avatar: 'https://picsum.photos/64'
-			},
-			{
-				id: 5,
-				sent: false,
-				text: ['Keep adding text', 'For scroll'],
-				name: 'Other user',
-				hint: '3 seconds ago',
-				avatar: 'https://picsum.photos/64'
-			},
-			{
-				id: 6,
-				sent: true,
-				text: ['Keep adding text', 'For scroll'],
-				name: 'Other user',
-				hint: '3 seconds ago',
-				avatar: 'https://picsum.photos/64'
-			},
-			{
-				id: 7,
-				sent: false,
-				text: ['Keep adding text', 'For scroll'],
-				name: 'Other user',
-				hint: '3 seconds ago',
-				avatar: 'https://picsum.photos/64'
-			}
-		])
 		const contact = useStore(currentContact)
 		const otherUser = computed(() =>
 			contact.value?.user1?.$id !== user.get()!.$id
@@ -235,6 +170,7 @@ export default defineComponent({
 		const ready = computed(
 			() => contact && otherUser && otherUser.value.user && otherUser.value.profile
 		)
+		const messages = computed(() => contact.value!.messages)
 		return { text, messages, contact, otherUser, ready }
 	},
 	mounted() {

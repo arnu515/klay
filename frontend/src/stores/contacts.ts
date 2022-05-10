@@ -3,8 +3,10 @@ import { action, atom, onMount } from 'nanostores'
 import { Notify } from 'quasar'
 import appwrite from 'src/lib/appwrite'
 import type { Contacts as C, Profile, SafeUser } from 'src/lib/types'
-import { getProfileOfUser } from 'src/lib/util'
 import user from './user'
+import { getMessages } from 'src/stores/messages'
+import type { MessageItem } from 'src/stores/messages'
+import { getProfile } from 'src/lib/cache/profile'
 
 interface Contacts extends C {
 	profile1: Profile
@@ -13,7 +15,9 @@ interface Contacts extends C {
 	user2: SafeUser
 }
 
-export const contacts = atom<Contacts[]>([])
+type ContactsItem = Contacts & { messages: MessageItem[] }
+
+export const contacts = atom<ContactsItem[]>([])
 
 onMount(contacts, () => {
 	console.log('[c] Subscibed to store')
@@ -30,18 +34,21 @@ onMount(contacts, () => {
 			'collections.contacts.documents',
 			async doc => {
 				if (doc.event.includes('create')) {
-					const u1 = await getProfileOfUser(doc.payload.userId1)
-					const u2 = await getProfileOfUser(doc.payload.userId2)
+					const u1 = await getProfile(doc.payload.userId1)
+					const u2 = await getProfile(doc.payload.userId2)
 					if (!u1 || !u2) {
 						// invalid data, can't trust it
 						return
 					}
-					const request: Contacts = {
+					const otherUserId =
+						u1.user.$id !== user.get()!.$id ? u1.user.$id : u2.user.$id
+					const request: ContactsItem = {
 						...doc.payload,
 						profile1: u1.profile,
 						profile2: u2.profile,
 						user1: u1.user,
-						user2: u2.user
+						user2: u2.user,
+						messages: await getMessages(otherUserId)
 					}
 					contacts.set([...contacts.get(), request])
 					Notify.create({
@@ -84,27 +91,30 @@ export const loadContacts = action(contacts, 'loadContacts', async () => {
 		total: res1.total + res2.total,
 		documents: res1.documents.concat(res2.documents)
 	}
-	const requests = [] as Contacts[]
+	const requests = [] as ContactsItem[]
 	for await (const doc of res.documents) {
-		const u1 = await getProfileOfUser(doc.userId1)
-		const u2 = await getProfileOfUser(doc.userId2)
+		const u1 = await getProfile(doc.userId1)
+		const u2 = await getProfile(doc.userId2)
 		if (!u1 || !u2) {
 			// invalid data, can't trust it
 			return
 		}
-		const request: Contacts = {
+		const otherUserId = u1.user.$id !== user.get()!.$id ? u1.user.$id : u2.user.$id
+		const request: ContactsItem = {
 			...doc,
 			profile1: u1.profile,
 			profile2: u2.profile,
 			user1: u1.user,
-			user2: u2.user
+			user2: u2.user,
+			messages: await getMessages(otherUserId)
 		}
+		console.log('req.messages', request.messages)
 		requests.push(request)
 	}
 	contacts.set(requests)
 	currentContact.set({ ...requests[0] })
 })
 
-export const currentContact = atom<Contacts | null>(null)
+export const currentContact = atom<ContactsItem | null>(null)
 
 export default contacts
