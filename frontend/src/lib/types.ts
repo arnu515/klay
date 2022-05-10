@@ -35,3 +35,11 @@ export interface Message {
 	attachments: Attachment[]
 	created_at: string
 }
+
+export interface ChatEvent {
+	$id: string
+	userId1: string
+	userId2: string
+	type: 'create' | 'update' | 'delete'
+	messageId: string
+}
