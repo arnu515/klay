@@ -128,7 +128,7 @@ import { useRoute } from 'vue-router'
 import { chatRequests, loadChatRequests } from '../stores/chatRequests'
 import contactsStore, { currentContact } from 'src/stores/contacts'
 import { loadContacts } from 'src/stores/contacts'
-import pKeyStore from 'src/stores/privateKey'
+import keyPairStore from 'src/stores/keyPair'
 import AskPin from 'src/components/AskPin.vue'
 
 export default defineComponent({
@@ -173,7 +173,7 @@ export default defineComponent({
 			}
 		])
 		const contacts = useStore(contactsStore)
-		const privateKey = useStore(pKeyStore)
+		const keys = useStore(keyPairStore)
 
 		function setContact(id: string) {
 			const contact = contacts.value.find(c => c.$id === id)
@@ -196,7 +196,7 @@ export default defineComponent({
 				leftDrawerOpen.value = !leftDrawerOpen.value
 			},
 			loading,
-			privateKey
+			privateKey: keys
 		}
 	},
 	mounted() {

@@ -54,7 +54,7 @@
 
 <script lang="ts" setup>
 import { ref } from 'vue'
-import privateKey, { getKey } from 'src/stores/privateKey'
+import keys, { getKeys } from 'src/stores/keyPair'
 import { Dialog } from 'quasar'
 
 const pin = ref('')
@@ -64,15 +64,13 @@ async function submit() {
 	if (!pin.value) return
 	if (pin.value.length !== 4) return
 
-	const key = await getKey(pin.value)
+	const key = await getKeys(pin.value)
 	if (key === null) {
 		Dialog.create({
 			title: 'Invalid PIN',
 			message: 'Your PIN is invalid. Please check it and try again.'
 		})
 		return
-	}
-
-	privateKey.set(key.key)
+	} else keys.set(key)
 }
 </script>
