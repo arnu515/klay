@@ -15,7 +15,7 @@ export async function getJWT() {
 		if (
 			typeof jwt === 'string' &&
 			typeof jwtAt === 'number' &&
-			jwtAt + 15 * 60 * 1000 < Date.now()
+			jwtAt + 15 * 60 * 1000 > Date.now()
 		) {
 			return jwt
 		}
