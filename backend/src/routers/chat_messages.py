@@ -3,7 +3,6 @@ from time import time
 from typing import Literal
 
 from appwrite.query import Query
-from bson import ObjectId
 from fastapi import APIRouter, Depends
 from nanoid import generate as nanoid
 from pydantic import BaseModel
@@ -30,7 +29,7 @@ def get_chat_message(message_id: str, aw: Appwrite = Depends(auth())):
     user = aw.account.get()
 
     col = db[f"chat_{user.get('$id')}"]
-    message = col.find_one({"_id": ObjectId(message_id)})
+    message = col.find_one({"_id": message_id})
     return {"message": {**message, "_id": str(message.get("_id"))}}
 
 
