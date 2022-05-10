@@ -1,3 +1,4 @@
+import { map } from 'nanostores'
 import { loadMessages } from 'src/lib/cache/messages'
 import { getProfile } from 'src/lib/cache/profile'
 import type { Message as Msg } from 'src/lib/types'
@@ -13,17 +14,20 @@ export interface MessageItem {
 	raw: Msg
 }
 
+export const messages = map<Record<string, MessageItem[]>>({})
+
 export async function getMessages(userId: string) {
-	const messages = await loadMessages(userId)
-	if (!messages.length) return []
+	const msgs = await loadMessages(userId)
+	if (!msgs.length) return []
 
 	const items: MessageItem[] = []
-	for await (const msg of messages) {
+	for await (const msg of msgs) {
 		const m = await Message(msg)
 		console.log({ m, msg })
 		items.push(m)
 	}
 
+	messages.setKey(userId, items)
 	return items
 }
 
@@ -70,3 +74,5 @@ export async function Message(message: Msg) {
 		}
 	}
 }
+
+export default messages

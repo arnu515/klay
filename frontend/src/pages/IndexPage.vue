@@ -143,12 +143,14 @@ main {
 </style>
 
 <script lang="ts">
-import { computed, defineComponent, ref } from 'vue'
+import { computed, defineComponent, ref, watch } from 'vue'
 import ChatMessage from 'components/ChatMessage.vue'
 import toolbarTitle from 'src/stores/toolbarTitle'
 import { currentContact } from 'src/stores/contacts'
 import { useStore } from '@nanostores/vue'
 import user from 'src/stores/user'
+import messagesStore, { MessageItem } from 'src/stores/messages'
+import { getMessages } from 'src/stores/messages'
 
 export default defineComponent({
 	name: 'IndexPage',
@@ -167,18 +169,45 @@ export default defineComponent({
 						profile: contact.value?.profile2 || null
 				  }
 		)
-		const ready = computed(
-			() => contact && otherUser && otherUser.value.user && otherUser.value.profile
+		const messages = ref<MessageItem[] | null>(
+			otherUser.value.user ? messagesStore.get()[otherUser.value.user.$id] : null
 		)
-		const messages = computed(() => contact.value!.messages)
+		console.log({ messages: messagesStore.get() })
+		const ready = computed(
+			() =>
+				contact &&
+				otherUser &&
+				otherUser.value.user &&
+				otherUser.value.profile &&
+				messages.value
+		)
+
+		async function updateUser(u: any) {
+			console.log({ u })
+			if (!u.user) return
+			messages.value = []
+			await getMessages(u.user.$id)
+			int && clearInterval(int)
+			int = null
+			console.log(messagesStore.get())
+			messages.value = messagesStore.get()[u.user.$id] || []
+			const mel = document.getElementById('messages') as HTMLDivElement
+			console.log({ mel })
+			if (mel) {
+				// scroll to bottom
+				mel.scrollTop = mel.scrollHeight
+			}
+		}
+
+		watch(otherUser, updateUser)
+
+		let int: NodeJS.Timeout | null = setInterval(() => {
+			updateUser(otherUser.value)
+		}, 500)
+
 		return { text, messages, contact, otherUser, ready }
 	},
 	mounted() {
-		const messages = document.getElementById('messages') as HTMLDivElement
-		if (messages) {
-			// scroll to bottom
-			messages.scrollTop = messages.scrollHeight
-		}
 		toolbarTitle.set('Chat')
 	}
 })
