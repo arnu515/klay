@@ -4,6 +4,7 @@ import appwrite from 'src/lib/appwrite'
 import axios from 'src/lib/axios'
 import { loadMessages } from 'src/lib/cache/messages'
 import { getProfile } from 'src/lib/cache/profile'
+import { getJWT } from 'src/lib/jwt'
 import type { ChatEvent, Message as Msg } from 'src/lib/types'
 import { parseFastApiError } from 'src/lib/util'
 import user from './user'
@@ -34,30 +35,14 @@ onMount(messages, () => {
 
 			switch (data.type) {
 				case 'create': {
-					const res = await axios.get<{ message: Msg }>(
-						'/api/chat_messages/message-' + data.messageId
-					)
-					if (res.status !== 200) {
-						Dialog.create({
-							title: 'An error occured',
-							message: parseFastApiError(res.data)
-						})
-						return
-					}
-					await MessageMethods.create(doc.payload.userId1, res.data.message)
+					const m = await MessageMethods.get(data.messageId)
+					if (!m) return
+					await MessageMethods.create(doc.payload.userId1, m)
 				}
 				case 'update': {
-					const res = await axios.get<{ message: Msg }>(
-						'/api/chat_messages/message-' + data.messageId
-					)
-					if (res.status !== 200) {
-						Dialog.create({
-							title: 'An error occured',
-							message: parseFastApiError(res.data)
-						})
-						return
-					}
-					await MessageMethods.update(doc.payload.userId1, res.data.message)
+					const m = await MessageMethods.get(data.messageId)
+					if (!m) return
+					await MessageMethods.update(doc.payload.userId1, m)
 				}
 				case 'delete': {
 					await MessageMethods.delete(doc.payload.userId1, data.messageId)
@@ -120,6 +105,25 @@ export class MessageMethods {
 			userId,
 			m.filter(m => m.id !== msgId)
 		)
+	}
+
+	static async get(msgId: string) {
+		const res = await axios.get<{ message: Msg }>(
+			'/api/chat_messages/message-' + msgId,
+			{
+				headers: {
+					Authorization: 'Bearer ' + (await getJWT())
+				}
+			}
+		)
+		if (res.status !== 200) {
+			Dialog.create({
+				title: 'An error occured',
+				message: parseFastApiError(res.data)
+			})
+			return null
+		}
+		return res.data.message
 	}
 }
 
