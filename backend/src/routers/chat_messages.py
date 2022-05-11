@@ -24,12 +24,14 @@ class Attachment(BaseModel):
 @router.get("/message-{message_id}")
 def get_chat_message(message_id: str, aw: Appwrite = Depends(auth())):
     """
-    Get all chat messages with user_id
+    Get chat message with id message_id
     """
     user = aw.account.get()
 
     col = db[f"chat_{user.get('$id')}"]
     message = col.find_one({"_id": message_id})
+    if not message:
+        raise HTTPException("Message not found", 404)
     return {"message": {**message, "_id": str(message.get("_id"))}}
 
 
@@ -55,11 +57,13 @@ def get_chat_messages(user_id: str, aw: Appwrite = Depends(auth())):
 
     col = db[f"chat_{user.get('$id')}"]
     messages = []
-    for i in col.find({"to": user_id}).sort("createdAt", 1).limit(100):
-        messages.append({
-            **i,
-            "_id": str(i.get("_id")),
-        })
+    m1 = col.find({"to": user_id, "from": user.get("$id")})
+    m2 = col.find({"to": user.get("$id"), "from": user_id})
+    for message in m1:
+        messages.append({**message, "_id": str(message.get("_id"))})
+    for message in m2:
+        messages.append({**message, "_id": str(message.get("_id"))})
+    messages.sort(key=lambda x: x.get("created_at"))
     return {"messages": messages}
 
 
@@ -98,6 +102,7 @@ def create_chat_message(user_id: str, body: CreateChatMessageBody, aw: Appwrite 
         "content": body.content1,
         "attachments": body.attachments,
         "to": user_id,
+        "from": user.get("$id"),
         "created_at": str(math.floor(time()))
     })
 
@@ -106,7 +111,8 @@ def create_chat_message(user_id: str, body: CreateChatMessageBody, aw: Appwrite 
         "_id": message_id,
         "content": body.content2,
         "attachments": body.attachments,
-        "to": user.get("$id"),
+        "to": user_id,
+        "from": user.get("$id"),
         "created_at": str(math.floor(time()))
     })
 

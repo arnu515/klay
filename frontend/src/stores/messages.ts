@@ -37,6 +37,7 @@ onMount(messages, () => {
 				case 'create': {
 					const m = await MessageMethods.get(data.messageId)
 					if (!m) return
+					console.log('created', m)
 					await MessageMethods.create(doc.payload.userId1, m)
 				}
 				case 'update': {
@@ -74,11 +75,13 @@ export async function getMessages(userId: string) {
 
 export class MessageMethods {
 	static async create(userId: string, msg: Msg, showNotif = true) {
-		const m = messages.get()[userId]
+		console.log(userId, messages.get())
+		const m = messages.get()[userId] || []
 		console.log({ m })
 		if (!m) return
 		const message = await Message(msg)
 		messages.setKey(userId, [...m, message])
+		console.log(userId, messages.get())
 
 		if (showNotif) {
 			Notify.create({
@@ -88,9 +91,7 @@ export class MessageMethods {
 	}
 
 	static async update(userId: string, msg: Msg) {
-		const m = messages.get()[userId]
-		console.log({ m })
-		if (!m) return
+		const m = messages.get()[userId] || []
 		messages.setKey(
 			userId,
 			await Promise.all(m.map(async m => (m.id === msg._id ? await Message(msg) : m)))
@@ -98,9 +99,7 @@ export class MessageMethods {
 	}
 
 	static async delete(userId: string, msgId: string) {
-		const m = messages.get()[userId]
-		console.log({ m })
-		if (!m) return
+		const m = messages.get()[userId] || []
 		messages.setKey(
 			userId,
 			m.filter(m => m.id !== msgId)

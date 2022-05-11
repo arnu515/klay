@@ -3,10 +3,12 @@
 		:name="props.name"
 		:text="props.text"
 		text-html
+		title="Right click to edit"
 		:sent="props.sent"
 		:bg-color="!props.sent ? 'grey-4' : 'primary'"
 		:text-color="!props.sent ? 'black' : 'white'"
 		:stamp="props.hint"
+		@contextmenu.prevent="$emit('rightclick', $event)"
 	>
 		<template v-slot:avatar>
 			<q-avatar size="32px" style="margin: 0rem 0.5rem">
