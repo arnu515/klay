@@ -4,25 +4,17 @@
  */
 
 import appwrite from './appwrite'
-import { LocalStorageCache } from 'src/lib/cache'
 
-const jwtCache = new LocalStorageCache('jwt', '13 minutes')
+export let jwt = ''
+export let jwtCreatedAt = 0
 
 export async function getJWT() {
 	try {
-		let jwt = jwtCache.get('jwt')
-		let jwtAt = jwtCache.get('jwtAt')
-		if (
-			typeof jwt === 'string' &&
-			typeof jwtAt === 'number' &&
-			jwtAt + 15 * 60 * 1000 > Date.now()
-		) {
+		if (jwt && jwtCreatedAt + 15 * 60 * 1000 > Date.now()) {
 			return jwt
 		}
 		jwt = (await appwrite.account.createJWT()).jwt
-		jwtAt = Date.now()
-		jwtCache.set('jwt', jwt)
-		jwtCache.set('jwtAt', jwtAt)
+		jwtCreatedAt = Date.now()
 		return jwt
 	} catch {
 		return ''
