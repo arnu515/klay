@@ -21,6 +21,24 @@ class Attachment(BaseModel):
     url: str
 
 
+@router.get("/")
+def get_all_messages(aw: Appwrite = Depends(auth())):
+    """
+    Get all chat messages of the user
+    """
+    user = aw.account.get()
+    col = db[f"chat_{user.get('$id')}"]
+    messages = []
+    m1 = col.find({"from": user.get("$id")}).sort("created_at", 1)
+    m2 = col.find({"to": user.get("$id")}).sort("created_at", 1)
+    for message in m1:
+        messages.append({**message, "_id": str(message.get("_id"))})
+    for message in m2:
+        messages.append({**message, "_id": str(message.get("_id"))})
+    messages.sort(key=lambda x: x.get("created_at"))
+    return {"messages": messages}
+
+
 @router.get("/message-{message_id}")
 def get_chat_message(message_id: str, aw: Appwrite = Depends(auth())):
     """
