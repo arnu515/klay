@@ -79,6 +79,7 @@
 								round
 								:color="text ? 'primary' : 'gray-5'"
 								:disable="!text"
+								type="submit"
 								flat
 								icon="send"
 								title="Send message"
@@ -162,18 +163,18 @@ import user from 'src/stores/user'
 import messagesStore, { MessageMethods } from 'src/stores/messages'
 import { getMessages } from 'src/stores/messages'
 import axios from 'src/lib/axios'
-import { Dialog } from 'quasar'
+import { BottomSheet, Dialog } from 'quasar'
 import { parseFastApiError } from 'src/lib/util'
 import { getJWT } from 'src/lib/jwt'
 import appwrite from 'src/lib/appwrite'
 import { ChatEvent } from 'src/lib/types'
+import UpdateMessageDialog from 'src/components/UpdateMessageDialog.vue'
 
 export default defineComponent({
 	name: 'IndexPage',
 	components: { ChatMessage },
 	setup() {
 		const text = ref('')
-		const updateText = ref('')
 		const contact = useStore(currentContact)
 		const otherUser = computed(() =>
 			contact.value?.user1?.$id !== user.get()!.$id
@@ -236,7 +237,6 @@ export default defineComponent({
 		return {
 			text,
 			allMessages,
-			updateText,
 			contact,
 			otherUser,
 			ready,
@@ -322,28 +322,32 @@ export default defineComponent({
 			const message = messages.find(m => m.id === msgId)
 			if (!message) return
 			if (!message.sent) return
-			// this.updateText = '' + message.text[0]
-			Dialog.create({
-				title: 'Edit message',
-				message: 'Click / Tap outside to cancel',
-				prompt: {
-					model: this.text,
-					isValid: value => value.trim() !== '',
-					type: 'text',
-					label: 'Message'
-				},
-				ok: {
-					flat: true,
-					label: 'Save'
-				},
-				cancel: {
-					flat: true,
-					label: 'Delete',
-					color: 'negative'
+
+			BottomSheet.create({
+				title: 'Message Options',
+				actions: [
+					{
+						id: 'update',
+						icon: 'edit',
+						label: 'Edit message'
+					},
+					{
+						id: 'delete',
+						icon: 'delete',
+						classes: 'text-negative',
+						label: 'Delete message'
+					}
+				]
+			}).onOk(a => {
+				switch (a.id) {
+					case 'update':
+						this.updateMessage(message.id)
+						break
+					case 'delete':
+						this.deleteMessage(message.id)
+						break
 				}
 			})
-				.onOk(() => this.updateMessage(msgId))
-				.onCancel(() => this.deleteMessage(msgId))
 		},
 		async updateMessage(msgId: string) {
 			const messages = this.allMessages[this.otherUser.user!.$id]
@@ -351,32 +355,39 @@ export default defineComponent({
 			const message = messages.find(m => m.id === msgId)
 			if (!message) return
 
-			console.log(this.updateText)
-			// const res = await axios.put(
-			// 	'/api/chat_messages/' + this.otherUser.user!.$id,
-			// 	{
-			// 		content1: this.updateText,
-			// 		content2: this.updateText,
-			// 		message_id: msgId
-			// 	},
-			// 	{
-			// 		headers: {
-			// 			Authorization: 'Bearer ' + (await getJWT())
-			// 		}
-			// 	}
-			// )
+			Dialog.create({
+				component: UpdateMessageDialog,
+				componentProps: {
+					id: message.id,
+					text: message.text.join('\n')
+				}
+			}).onOk(async text => {
+				const res = await axios.put(
+					'/api/chat_messages/' + this.otherUser.user!.$id,
+					{
+						content1: text,
+						content2: text,
+						message_id: msgId
+					},
+					{
+						headers: {
+							Authorization: 'Bearer ' + (await getJWT())
+						}
+					}
+				)
 
-			// if (res.status !== 200) {
-			// 	Dialog.create({
-			// 		title: 'Error',
-			// 		message: parseFastApiError(res.data)
-			// 	})
-			// 	return
-			// } else {
-			// 	const msg = await MessageMethods.get(message.id)
-			// 	if (!msg) return
-			// 	await MessageMethods.update(this.otherUser.user!.$id, msg)
-			// }
+				if (res.status !== 200) {
+					Dialog.create({
+						title: 'Error',
+						message: parseFastApiError(res.data)
+					})
+					return
+				} else {
+					const msg = await MessageMethods.get(message.id)
+					if (!msg) return
+					await MessageMethods.update(this.otherUser.user!.$id, msg)
+				}
+			})
 		},
 		async deleteMessage(msgId: string) {
 			const messages = this.allMessages[this.otherUser.user!.$id]
