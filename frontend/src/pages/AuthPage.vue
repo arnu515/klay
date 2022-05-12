@@ -95,6 +95,7 @@
 							stack-label
 							v-model="pin"
 							mask="####"
+							type="number"
 							input-style="text-align: center; width: 100%"
 							bottom-slots
 							:rules="[
@@ -206,7 +207,7 @@ async function signup() {
 	try {
 		loading.value = true
 
-		const keyPair = await e.Asymetric.generateKeys()
+		const keyPair = await e.Asymmetric.generateKeys()
 		const encryptedPrivateKey = await e.Symmetric.encryptSymmetric(
 			keyPair.privateKey,
 			pin.value

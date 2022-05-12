@@ -15,6 +15,7 @@
 						aria-label="Pin"
 						stack-label
 						v-model="pin"
+						type="number"
 						mask="####"
 						input-style="text-align: center; width: 100%"
 						bottom-slots
