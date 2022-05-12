@@ -26,6 +26,9 @@ export const loadUser = action(user, 'loadUser', async () => {
 	} catch {}
 	user.set(u)
 
+	localStorage.removeItem('jwt')
+	localStorage.removeItem('jwtCreatedAt')
+
 	if (u) {
 		// load profile
 		const p = await appwrite.database.getDocument('profiles', u.$id)
