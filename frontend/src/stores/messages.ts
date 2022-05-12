@@ -2,9 +2,11 @@ import { map } from 'nanostores'
 import { Dialog, Notify } from 'quasar'
 import axios from 'src/lib/axios'
 import { getProfile } from 'src/lib/cache/profile'
+import { Asymmetric } from 'src/lib/encryption'
 import { getJWT } from 'src/lib/jwt'
 import type { Message as Msg } from 'src/lib/types'
 import { parseFastApiError } from 'src/lib/util'
+import keyPair from './keyPair'
 import user from './user'
 
 export interface MessageItem {
@@ -18,6 +20,24 @@ export interface MessageItem {
 }
 
 export const messages = map<Record<string, MessageItem[]>>({})
+
+async function decryptMessage(enc: string) {
+	try {
+		const data = JSON.parse(atob(enc))
+		const dec = await Asymmetric.decrypt(
+			data,
+			await Asymmetric.getKey(
+				'private',
+				Asymmetric.cleanKey(keyPair.get()!.privateKey, 'privateKey')
+			)
+		)
+		console.log({ dec })
+		return dec
+	} catch (e) {
+		console.error(e)
+		return ''
+	}
+}
 
 export async function getMessages() {
 	const u = user.get()
@@ -131,7 +151,7 @@ export async function Message(message: Msg) {
 			name: profile.user.name,
 			raw: { ...message },
 			sent: false,
-			text: [message.content]
+			text: [await decryptMessage(message.content)]
 		}
 	} else {
 		const profile = await getProfile(user.get()!.$id)
@@ -142,7 +162,7 @@ export async function Message(message: Msg) {
 			name: profile.user.name,
 			raw: { ...message },
 			sent: true,
-			text: [message.content]
+			text: [await decryptMessage(message.content)]
 		}
 	}
 }

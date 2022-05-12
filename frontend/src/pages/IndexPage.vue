@@ -172,6 +172,9 @@ import { getJWT } from 'src/lib/jwt'
 import appwrite from 'src/lib/appwrite'
 import { ChatEvent } from 'src/lib/types'
 import UpdateMessageDialog from 'src/components/UpdateMessageDialog.vue'
+import { Asymmetric } from 'src/lib/encryption'
+import keyPair from 'src/stores/keyPair'
+import { loadKey } from 'src/lib/cache/publicKeys'
 
 export default defineComponent({
 	name: 'IndexPage',
@@ -293,11 +296,35 @@ export default defineComponent({
 			if (!this.text.trim()) return
 			if (this.sendingMessage) return
 			this.sendingMessage = true
+			const enc1 = btoa(
+				JSON.stringify(
+					await Asymmetric.encrypt(
+						this.text.trim(),
+						await Asymmetric.getKey(
+							'public',
+							Asymmetric.cleanKey(keyPair.get()!.publicKey, 'publicKey')
+						)
+					)
+				)
+			)
+			const enc2 = btoa(
+				JSON.stringify(
+					await Asymmetric.encrypt(
+						this.text.trim(),
+						await Asymmetric.getKey(
+							'public',
+							Asymmetric.cleanKey(await loadKey(this.otherUser.user!.$id), 'publicKey')
+						)
+					)
+				)
+			)
+			console.log('ours', enc1)
+			console.log('theirs', enc2)
 			const res = await axios.post(
 				'/api/chat_messages/' + this.otherUser.user!.$id,
 				{
-					content1: this.text.trim(),
-					content2: this.text.trim()
+					content1: enc1,
+					content2: enc2
 				},
 				{
 					headers: {
@@ -365,11 +392,38 @@ export default defineComponent({
 					text: message.text.join('\n')
 				}
 			}).onOk(async text => {
+				const enc1 = btoa(
+					JSON.stringify(
+						await Asymmetric.encrypt(
+							text.trim(),
+							await Asymmetric.getKey(
+								'public',
+								Asymmetric.cleanKey(keyPair.get()!.publicKey, 'publicKey')
+							)
+						)
+					)
+				)
+				const enc2 = btoa(
+					JSON.stringify(
+						await Asymmetric.encrypt(
+							text.trim(),
+							await Asymmetric.getKey(
+								'public',
+								Asymmetric.cleanKey(
+									await loadKey(this.otherUser.user!.$id),
+									'publicKey'
+								)
+							)
+						)
+					)
+				)
+				console.log('ours', enc1)
+				console.log('theirs', enc2)
 				const res = await axios.put(
 					'/api/chat_messages/' + this.otherUser.user!.$id,
 					{
-						content1: text,
-						content2: text,
+						content1: enc1,
+						content2: enc2,
 						message_id: msgId
 					},
 					{
