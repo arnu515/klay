@@ -32,6 +32,7 @@ export interface Message {
 	_id: string
 	content: string
 	to: string
+	from: string
 	attachments: Attachment[]
 	created_at: string
 }

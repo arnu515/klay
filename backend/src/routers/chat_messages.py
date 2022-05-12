@@ -6,6 +6,7 @@ from appwrite.query import Query
 from fastapi import APIRouter, Depends
 from nanoid import generate as nanoid
 from pydantic import BaseModel
+from pymongo import ReturnDocument
 
 from src.dependencies.auth import auth
 from src.exceptions.HTTPException import HTTPException
@@ -61,17 +62,6 @@ def get_chat_messages(user_id: str, aw: Appwrite = Depends(auth())):
     user = aw.account.get()
     if user_id == user.get("$id"):
         raise HTTPException("You can't get messages with yourself", 400)
-    # check for existing contact
-    contact1 = aw.database.list_documents("contacts", [
-        Query.equal("userId1", user.get("$id")),
-        Query.equal("userId2", user_id),
-    ])
-    contact2 = aw.database.list_documents("contacts", [
-        Query.equal("userId1", user_id),
-        Query.equal("userId2", user.get("$id")),
-    ])
-    if not contact1.get("total") and not contact2.get("total"):
-        raise HTTPException("You can't message this user", 400)
 
     col = db[f"chat_{user.get('$id')}"]
     messages = []
@@ -113,7 +103,8 @@ def create_chat_message(user_id: str, body: CreateChatMessageBody, aw: Appwrite 
     if not contact1.get("total") and not contact2.get("total"):
         raise HTTPException("You can't send a chat message to this user", 400)
 
-    message_id = f"{user.get('$id')}-{user_id}-{nanoid(size=16)}"
+    alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+    message_id = f"{user.get('$id')}-{user_id}-{nanoid(alphabet, 16)}"
     col1 = db[f"chat_{user.get('$id')}"]
     col1.insert_one({
         "_id": message_id,
@@ -163,12 +154,6 @@ def update_chat_message(user_id: str, body: UpdateChatMessageBody, aw: Appwrite 
     # check that both users have contacts
     if user_id == user.get("$id"):
         raise HTTPException("You can't send a chat message to yourself", 400)
-    # check for chat message
-    message1 = col1.find_one({"to": user_id, "_id": body.message_id})
-    message2 = col2.find_one({"to": user.get("$id"), "_id": body.message_id})
-    if not message1 or not message2:
-        print(message1, message2)
-        raise HTTPException("No chat message found", 404)
     # check for existing contact
     contact1 = appwrite.database.list_documents("contacts", [
         Query.equal("userId1", user.get("$id")),
@@ -181,15 +166,23 @@ def update_chat_message(user_id: str, body: UpdateChatMessageBody, aw: Appwrite 
     if not contact1.get("total") and not contact2.get("total"):
         raise HTTPException("You can't send a chat message to this user", 400)
 
-    col1.update_one({"_id": message1.get("_id")}, {"$set": {"content": body.content1}})
-    col2.update_one({"_id": message2.get("_id")}, {"$set": {"content": body.content2}})
+    # check for chat message
+    message1 = col1.find_one_and_update({"to": user_id, "_id": body.message_id}, {"$set": {"content": body.content1}},
+                                        return_document=ReturnDocument.AFTER)
+    message2 = col2.find_one_and_update({"from": user.get("$id"), "_id": body.message_id},
+                                        {"$set": {"content": body.content2}}, return_document=ReturnDocument.AFTER)
+    print(message1, message2)
+    if not message1 or not message2:
+        print(message1, message2)
+        raise HTTPException("No chat message found", 404)
 
+    perms = (f"user:{user.get('$id')}", f"user:{user_id}")
     appwrite.database.create_document("chat_events", "unique()", {
         "userId1": user.get("$id"),
         "userId2": user_id,
         "type": "update",
         "messageId": message2.get("_id")
-    })
+    }, perms, perms)
 
     return {"message": "Chat message updated"}
 
@@ -206,11 +199,6 @@ def delete_chat_message(user_id: str, message_id: str, aw: Appwrite = Depends(au
     # check that both users have contacts
     if user_id == user.get("$id"):
         raise HTTPException("You can't send a chat message to yourself", 400)
-    # check for chat message
-    message1 = col1.find_one({"to": user_id, "_id": message_id})
-    message2 = col2.find_one({"to": user.get("$id"), "_id": message_id})
-    if not message1 or not message2:
-        raise HTTPException("No chat message found", 404)
     # check for existing contact
     contact1 = appwrite.database.list_documents("contacts", [
         Query.equal("userId1", user.get("$id")),
@@ -223,14 +211,18 @@ def delete_chat_message(user_id: str, message_id: str, aw: Appwrite = Depends(au
     if not contact1.get("total") and not contact2.get("total"):
         raise HTTPException("You can't send a chat message to this user", 400)
 
-    col1.delete_one({"_id": message1.get("_id")})
-    col2.delete_one({"_id": message2.get("_id")})
+    # check for chat message
+    message1 = col1.find_one_and_delete({"to": user_id, "_id": message_id})
+    message2 = col2.find_one_and_delete({"from": user.get("$id"), "_id": message_id})
+    if not message1 or not message2:
+        raise HTTPException("No chat message found", 404)
 
+    perms = (f"user:{user.get('$id')}", f"user:{user_id}")
     appwrite.database.create_document("chat_events", "unique()", {
         "userId1": user.get("$id"),
         "userId2": user_id,
         "type": "delete",
         "messageId": message2.get("_id"),
-    })
+    }, perms, perms)
 
     return {"message": "Chat message deleted"}

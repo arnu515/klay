@@ -21,7 +21,10 @@
 				</q-card-section>
 				<q-separator />
 				<q-card-section v-if="ready" id="messages" class="messages">
-					<div v-for="message of messages" v-bind:key="message.id">
+					<div
+						v-for="message of allMessages[otherUser.user!.$id]"
+						v-bind:key="message.id"
+					>
 						<chat-message
 							@rightclick="() => onRightClickMessage(message.id)"
 							:avatar="message.avatar"
@@ -156,12 +159,14 @@ import toolbarTitle from 'src/stores/toolbarTitle'
 import { currentContact } from 'src/stores/contacts'
 import { useStore } from '@nanostores/vue'
 import user from 'src/stores/user'
-import messagesStore, { MessageItem, MessageMethods } from 'src/stores/messages'
+import messagesStore, { MessageMethods } from 'src/stores/messages'
 import { getMessages } from 'src/stores/messages'
 import axios from 'src/lib/axios'
 import { Dialog } from 'quasar'
 import { parseFastApiError } from 'src/lib/util'
 import { getJWT } from 'src/lib/jwt'
+import appwrite from 'src/lib/appwrite'
+import { ChatEvent } from 'src/lib/types'
 
 export default defineComponent({
 	name: 'IndexPage',
@@ -182,29 +187,21 @@ export default defineComponent({
 				  }
 		)
 		const allMessages = useStore(messagesStore)
-		const messages = ref<MessageItem[] | null>(
-			otherUser.value.user ? messagesStore.get()[otherUser.value.user.$id] : null
-		)
-		console.log({ messages: messagesStore.get() })
+		// const messages = computed<MessageItem[]>(() =>
+		// 	otherUser.value.user ? (allMessages.value[otherUser.value.user.$id] as any) : null
+		// )
 		const ready = computed(
-			() =>
-				contact &&
-				otherUser &&
-				otherUser.value.user &&
-				otherUser.value.profile &&
-				messages.value
+			() => contact && otherUser && otherUser.value.user && otherUser.value.profile
 		)
 		const sendingMessage = ref(false)
 
 		async function updateUser(u: any) {
 			console.log({ u })
 			if (!u.user) return
-			messages.value = []
-			await getMessages(u.user.$id)
+			// messages.value = []
 			int && clearInterval(int)
 			int = null
-			console.log(messagesStore.get())
-			messages.value = messagesStore.get()[u.user.$id] || []
+			// messages.value = (allMessages.value[u.user.$id] || []) as any
 			const mel = document.getElementById('messages') as HTMLDivElement
 			console.log({ mel })
 			if (mel) {
@@ -213,13 +210,11 @@ export default defineComponent({
 			}
 		}
 
+		const unsub = ref<null | (() => void)>(null)
+
 		watch(otherUser, updateUser)
 		watch(allMessages, () => {
-			console.log({ allMessages: allMessages.value })
-			if (otherUser.value.user) {
-				console.log(otherUser.value.user, allMessages.value[otherUser.value.user.$id])
-				messages.value = (allMessages.value[otherUser.value.user.$id] || []) as any
-			}
+			console.log({ allMessages: allMessages.value, messages: messagesStore.get() })
 			setTimeout(() => {
 				const mel = document.getElementById('messages') as HTMLDivElement
 				if (mel) {
@@ -238,10 +233,56 @@ export default defineComponent({
 			}
 		}, 2000)
 
-		return { text, updateText, messages, contact, otherUser, ready, sendingMessage }
+		return {
+			text,
+			allMessages,
+			updateText,
+			contact,
+			otherUser,
+			ready,
+			sendingMessage,
+			unsub
+		}
 	},
-	mounted() {
+	async mounted() {
 		toolbarTitle.set('Chat')
+		await getMessages()
+		if (!this.unsub) {
+			this.unsub = appwrite.subscribe<ChatEvent>(
+				'collections.chat_events.documents',
+				async doc => {
+					console.log(doc)
+					const u = user.get()
+					if (!u) return
+					if (doc.payload.userId2 !== u.$id) return
+					const data = doc.payload
+					if (!doc.event.includes('create')) return
+
+					switch (data.type) {
+						case 'create': {
+							const m = await MessageMethods.get(data.messageId)
+							if (!m) return
+							console.log('created', m)
+							await MessageMethods.create(doc.payload.userId1, m)
+							break
+						}
+						case 'update': {
+							const m = await MessageMethods.get(data.messageId)
+							if (!m) return
+							await MessageMethods.update(doc.payload.userId1, m)
+							break
+						}
+						case 'delete': {
+							await MessageMethods.delete(doc.payload.userId1, data.messageId)
+							break
+						}
+					}
+				}
+			)
+		}
+	},
+	unmounted() {
+		if (this.unsub) this.unsub()
 	},
 	methods: {
 		async sendMessage() {
@@ -276,15 +317,17 @@ export default defineComponent({
 			this.text = ''
 		},
 		onRightClickMessage(msgId: string) {
-			if (!this.messages) return
-			const message = this.messages.find(m => m.id === msgId)
+			const messages = this.allMessages[this.otherUser.user!.$id]
+			if (!messages) return
+			const message = messages.find(m => m.id === msgId)
 			if (!message) return
-			this.updateText = message.text[0]
+			if (!message.sent) return
+			// this.updateText = '' + message.text[0]
 			Dialog.create({
 				title: 'Edit message',
 				message: 'Click / Tap outside to cancel',
 				prompt: {
-					model: this.updateText,
+					model: this.text,
 					isValid: value => value.trim() !== '',
 					type: 'text',
 					label: 'Message'
@@ -299,48 +342,46 @@ export default defineComponent({
 					color: 'negative'
 				}
 			})
-				.onOk(() => {
-					this.updateMessage(msgId, this.updateText.trim())
-					this.updateText = ''
-				})
-				.onCancel(() => {
-					this.deleteMessage(msgId)
-				})
+				.onOk(() => this.updateMessage(msgId))
+				.onCancel(() => this.deleteMessage(msgId))
 		},
-		async updateMessage(msgId: string, text: string) {
-			if (!this.messages) return
-			const message = this.messages.find(m => m.id === msgId)
+		async updateMessage(msgId: string) {
+			const messages = this.allMessages[this.otherUser.user!.$id]
+			if (!messages) return
+			const message = messages.find(m => m.id === msgId)
 			if (!message) return
 
-			const res = await axios.put(
-				'/api/chat_messages/' + this.otherUser.user!.$id,
-				{
-					content1: text,
-					content2: text,
-					message_id: msgId
-				},
-				{
-					headers: {
-						Authorization: 'Bearer ' + (await getJWT())
-					}
-				}
-			)
+			console.log(this.updateText)
+			// const res = await axios.put(
+			// 	'/api/chat_messages/' + this.otherUser.user!.$id,
+			// 	{
+			// 		content1: this.updateText,
+			// 		content2: this.updateText,
+			// 		message_id: msgId
+			// 	},
+			// 	{
+			// 		headers: {
+			// 			Authorization: 'Bearer ' + (await getJWT())
+			// 		}
+			// 	}
+			// )
 
-			if (res.status !== 200) {
-				Dialog.create({
-					title: 'Error',
-					message: parseFastApiError(res.data)
-				})
-				return
-			} else {
-				const msg = await MessageMethods.get(message.id)
-				if (!msg) return
-				await MessageMethods.update(this.otherUser.user!.$id, msg)
-			}
+			// if (res.status !== 200) {
+			// 	Dialog.create({
+			// 		title: 'Error',
+			// 		message: parseFastApiError(res.data)
+			// 	})
+			// 	return
+			// } else {
+			// 	const msg = await MessageMethods.get(message.id)
+			// 	if (!msg) return
+			// 	await MessageMethods.update(this.otherUser.user!.$id, msg)
+			// }
 		},
 		async deleteMessage(msgId: string) {
-			if (!this.messages) return
-			const message = this.messages.find(m => m.id === msgId)
+			const messages = this.allMessages[this.otherUser.user!.$id]
+			if (!messages) return
+			const message = messages.find(m => m.id === msgId)
 			if (!message) return
 
 			const res = await axios.delete(
