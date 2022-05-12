@@ -2,7 +2,7 @@ import { Models } from 'appwrite'
 import { atom, onMount } from 'nanostores'
 import appwrite from 'src/lib/appwrite'
 import * as e from '../lib/encryption'
-import { loadKey } from './publicKeys'
+import { loadKey } from '../lib/cache/publicKeys'
 import user from './user'
 
 type PrivateKeyEncrypted = { iv: string; data: string }
@@ -55,9 +55,9 @@ export async function getKeys(pw: string): Promise<KeyPair | null> {
 
 	try {
 		const privateKey = await e.Symmetric.decryptSymmetric(privateKeyJson, pw)
-		await e.Asymetric.getKey(
+		await e.Asymmetric.getKey(
 			'private',
-			e.Asymetric.cleanKeys({ publicKey: '', privateKey: privateKey }).privateKey
+			e.Asymmetric.cleanKeys({ publicKey: '', privateKey: privateKey }).privateKey
 		)
 		localStorage.setItem('privateKey', privateKey)
 		localStorage.setItem('publicKey', keys.public)
