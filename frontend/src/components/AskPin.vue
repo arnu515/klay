@@ -44,6 +44,7 @@
 						flat
 						color="negative"
 						label="Forgot PIN"
+						@click="() => $q.dialog({ title: 'Coming soon', message: 'Coming soon' })"
 						:disable="loading"
 					/>
 				</div>

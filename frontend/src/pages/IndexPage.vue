@@ -56,6 +56,9 @@
 					>
 						<template v-slot:before>
 							<q-btn
+								@click="
+									() => $q.dialog({ title: 'Coming soon', message: 'Coming soon' })
+								"
 								round
 								color="primary"
 								icon="add"
