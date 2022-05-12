@@ -79,7 +79,7 @@
 								round
 								:color="text ? 'primary' : 'gray-5'"
 								:disable="!text"
-								type="submit"
+								@click="sendMessage"
 								flat
 								icon="send"
 								title="Send message"
