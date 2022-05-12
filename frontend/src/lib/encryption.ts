@@ -37,7 +37,7 @@ export function decode(buffer: ArrayBuffer) {
 	return decoder.decode(buffer)
 }
 
-export class Asymetric {
+export class Asymmetric {
 	static async generateKeys(): Promise<KeyPair> {
 		const keys = await crypto.subtle.generateKey(
 			{
@@ -59,23 +59,31 @@ export class Asymetric {
 		return { publicKey, privateKey }
 	}
 
+	static cleanKey(key: string, type: keyof KeyPair) {
+		if (type === 'privateKey') {
+			return key
+				.replace('-----BEGIN PRIVATE KEY-----', '')
+				.replace('-----END PRIVATE KEY-----', '')
+				.trim()
+		} else {
+			return key
+				.replace('-----BEGIN PUBLIC KEY-----', '')
+				.replace('-----END PUBLIC KEY-----', '')
+				.trim()
+		}
+	}
+
 	static cleanKeys(keyPair: KeyPair): KeyPair {
-		const publicKey = keyPair.publicKey
-			.replace('-----BEGIN PUBLIC KEY-----', '')
-			.replace('-----END PUBLIC KEY-----', '')
-			.trim()
-		const privateKey = keyPair.privateKey
-			.replace('-----BEGIN PRIVATE KEY-----', '')
-			.replace('-----END PRIVATE KEY-----', '')
-			.trim()
+		const publicKey = Asymmetric.cleanKey(keyPair.publicKey, 'publicKey')
+		const privateKey = Asymmetric.cleanKey(keyPair.privateKey, 'privateKey')
 		console.log('Cleaned', { publicKey, privateKey })
 		return { publicKey, privateKey }
 	}
 
 	static async getKeys(keys: KeyPair): Promise<CryptoKeyPair> {
-		const keyPair = Asymetric.cleanKeys(keys)
-		const publicKey = await Asymetric.getKey('public', keyPair.publicKey)
-		const privateKey = await Asymetric.getKey('private', keyPair.privateKey)
+		const keyPair = Asymmetric.cleanKeys(keys)
+		const publicKey = await Asymmetric.getKey('public', keyPair.publicKey)
+		const privateKey = await Asymmetric.getKey('private', keyPair.privateKey)
 		return {
 			publicKey,
 			privateKey
