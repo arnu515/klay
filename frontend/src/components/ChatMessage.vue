@@ -2,7 +2,6 @@
 	<q-chat-message
 		:name="props.name"
 		:text="props.text"
-		text-html
 		title="Right click to edit"
 		:sent="props.sent"
 		:bg-color="!props.sent ? 'grey-4' : 'primary'"
