@@ -39,6 +39,200 @@
         }
       ],
       "indexes": []
+    },
+    {
+      "$id": "contacts",
+      "$read": [],
+      "$write": [],
+      "name": "Contacts",
+      "enabled": true,
+      "permission": "document",
+      "attributes": [
+        {
+          "key": "userId1",
+          "type": "string",
+          "status": "available",
+          "required": true,
+          "array": false,
+          "size": 255,
+          "default": null
+        },
+        {
+          "key": "userId2",
+          "type": "string",
+          "status": "available",
+          "required": true,
+          "array": false,
+          "size": 255,
+          "default": null
+        }
+      ],
+      "indexes": [
+        {
+          "key": "userId1",
+          "type": "key",
+          "status": "available",
+          "attributes": ["userId1"],
+          "orders": ["ASC"]
+        },
+        {
+          "key": "userId2",
+          "type": "key",
+          "status": "available",
+          "attributes": ["userId2"],
+          "orders": ["ASC"]
+        },
+        {
+          "key": "userId1userId2",
+          "type": "key",
+          "status": "available",
+          "attributes": ["userId1", "userId2"],
+          "orders": ["ASC", "ASC"]
+        }
+      ]
+    },
+    {
+      "$id": "chat_requests",
+      "$read": [],
+      "$write": [],
+      "name": "Chat Requests",
+      "enabled": true,
+      "permission": "document",
+      "attributes": [
+        {
+          "key": "userId1",
+          "type": "string",
+          "status": "available",
+          "required": true,
+          "array": false,
+          "size": 255,
+          "default": null
+        },
+        {
+          "key": "userId2",
+          "type": "string",
+          "status": "available",
+          "required": true,
+          "array": false,
+          "size": 255,
+          "default": null
+        }
+      ],
+      "indexes": [
+        {
+          "key": "userId1",
+          "type": "key",
+          "status": "available",
+          "attributes": ["userId1"],
+          "orders": ["ASC"]
+        },
+        {
+          "key": "userId2",
+          "type": "key",
+          "status": "available",
+          "attributes": ["userId2"],
+          "orders": ["ASC"]
+        },
+        {
+          "key": "userId1userId2",
+          "type": "key",
+          "status": "available",
+          "attributes": ["userId1", "userId2"],
+          "orders": ["ASC", "ASC"]
+        }
+      ]
+    },
+    {
+      "$id": "chat_keys",
+      "$read": [],
+      "$write": [],
+      "name": "Chat Keys",
+      "enabled": true,
+      "permission": "document",
+      "attributes": [
+        {
+          "key": "public",
+          "type": "string",
+          "status": "available",
+          "required": true,
+          "array": false,
+          "size": 65535,
+          "default": null
+        },
+        {
+          "key": "private",
+          "type": "string",
+          "status": "available",
+          "required": true,
+          "array": false,
+          "size": 65535,
+          "default": null
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "$id": "chat_events",
+      "$read": [],
+      "$write": [],
+      "name": "Chat Events",
+      "enabled": true,
+      "permission": "document",
+      "attributes": [
+        {
+          "key": "userId1",
+          "type": "string",
+          "status": "available",
+          "required": true,
+          "array": false,
+          "size": 255,
+          "default": null
+        },
+        {
+          "key": "userId2",
+          "type": "string",
+          "status": "available",
+          "required": true,
+          "array": false,
+          "size": 255,
+          "default": null
+        },
+        {
+          "key": "type",
+          "type": "string",
+          "status": "available",
+          "required": true,
+          "array": false,
+          "elements": ["delete", "create", "update"],
+          "format": "enum",
+          "default": null
+        },
+        {
+          "key": "messageId",
+          "type": "string",
+          "status": "available",
+          "required": true,
+          "array": false,
+          "size": 255,
+          "default": null
+        }
+      ],
+      "indexes": [
+        {
+          "key": "userId1",
+          "type": "key",
+          "status": "available",
+          "attributes": ["userId1"],
+          "orders": ["ASC"]
+        },
+        {
+          "key": "userId2",
+          "type": "key",
+          "status": "available",
+          "attributes": ["userId2"],
+          "orders": ["ASC"]
+        }
+      ]
     }
   ]
 }
