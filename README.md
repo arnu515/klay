@@ -12,7 +12,9 @@ https://dev.to/arnu515/introducing-klay-an-end-to-end-encrypted-chat-application
 
 Web: https://klay-arnu515.vercel.app/
 
-Android: *tba*
+Android: https://appwrite.arnu515.tk/v1/storage/buckets/files/files/klay.apk/download?project=klay
+
+(You may get a Play Protect error while installing the app. You can ignore that error. It happens because the certificate is self signed).
 
 ## Compile the app on your own
 
