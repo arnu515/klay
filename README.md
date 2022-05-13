@@ -6,7 +6,7 @@ Works on the web, and as a mobile app.
 
 ## Dev.to Post
 
-
+https://dev.to/arnu515/introducing-klay-an-end-to-end-encrypted-chat-application-6lp
 
 ## URL
 
