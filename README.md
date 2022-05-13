@@ -10,7 +10,7 @@ Works on the web, and as a mobile app.
 
 ## URL
 
-Web: https://klay-three.vercel.app
+Web: https://klay-arnu515.vercel.app/
 
 Android: *tba*
 
