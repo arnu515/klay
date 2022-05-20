@@ -4,6 +4,10 @@ Klay is an end-to-end encrypted chat app.
 
 Works on the web, and as a mobile app.
 
+(Can be a bit slow because it's hosted on a $5 droplet on [DigitalOcean](https://m.do.co/c/371591aa3027))
+
+[![DigitalOcean Referral Badge](https://web-platforms.sfo2.digitaloceanspaces.com/WWW/Badge%203.svg)](https://www.digitalocean.com/?refcode=371591aa3027&utm_campaign=Referral_Invite&utm_medium=Referral_Program&utm_source=badge)
+
 ## Dev.to Post
 
 https://dev.to/arnu515/introducing-klay-an-end-to-end-encrypted-chat-application-6lp
